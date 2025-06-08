@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { useFetch } from "../services/useFetch";
 import {adminLinks} from "../routers/links";
-import {useAuth} from "";
+//import {useAuth} from "";
 
 const Materias = () => {
     const {user} = useAuth();

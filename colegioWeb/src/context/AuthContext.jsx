@@ -11,16 +11,37 @@ export const useAuth = () => {
 
 export const AuthProvider = ({children}) => {
     const [user, setUser] = useState(() => {
+        const storedUser = localStorage.getItem("user");
+
         const token = localStorage.getItem("token");
         const role = localStorage.getItem("role");
-
         const correoElectronico = localStorage.getItem("correoElectronico");
         const idUsuario = localStorage.getItem("idUsuario");
+
+        if (storedUser) {
+            const parsedUser = JSON.parse(storedUser);
+            console.log("Inicializando estado de usuario desde localStorage:", parsedUser);
+            return parsedUser;
+        }
 
         return token && role ? { token, role, correoElectronico, idUsuario }: null;
     });
 
     const login = (userData, navigate) => {
+        console.log("Guardando usuario en localStorage:", userData); // <-- Agregado
+
+        /*localStorage.setItem('user', JSON.stringify({
+            token: userData.token,
+            correoElectronico: userData.correoElectronico,
+            idUsuario: userData.idUsuario,
+            role: userData.role || 'user' // si es que tienes roles
+        }));*/
+
+        if (!userData.token) {
+            console.error("Token no recibido!");
+            return;
+        }
+
         localStorage.setItem("token", userData.token);
         localStorage.setItem("role", userData.role);
         localStorage.setItem("correoElectronico", userData.correoElectronico);
@@ -32,7 +53,12 @@ export const AuthProvider = ({children}) => {
             correoElectronico: userData.correoElectronico,
             idUsuario: userData.idUsuario
         });
-        if (navigate) navigate('/');
+
+         // Redirección FORZADA (opcional)
+        setTimeout(() => {
+            navigate('/eventos', { replace: true });
+        }, 100);
+        //if (navigate) navigate('/');
     }
 
     const logout = (navigate) => {
@@ -51,8 +77,3 @@ export const AuthProvider = ({children}) => {
     );
 
 }
-
-
-
-
-

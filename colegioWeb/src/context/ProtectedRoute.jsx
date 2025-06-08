@@ -10,7 +10,7 @@ const ProtectedRoute = ({children, requiredRole}) => {
     }
 
     //Este fragmento va a cambiar
-    if (requiredRole && user.role !== `ROLE_${requiredRole.toUpperCase()}`) {
+    if (requiredRole && user.role !== requiredRole.toUpperCase()) {
         return <Navigate to="/login" replace/>; 
     }
 

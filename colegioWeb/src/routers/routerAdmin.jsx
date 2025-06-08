@@ -10,7 +10,7 @@ import Chats from "../pages/Chats";
 import Login from "../pages/Login";
 import ProtectedRoute from "../context/ProtectedRoute";
 
-export function routerAdmin (){
+const RouterAdmin = () => {
     return(
         <Routes>
             <Route path="/login" element={<Login/>}/>
@@ -57,7 +57,9 @@ export function routerAdmin (){
                 </ProtectedRoute>
             }/>
 
+            <Route path="/" element={<Login/>} />
         </Routes>
     );
 }
 
+export default RouterAdmin;
