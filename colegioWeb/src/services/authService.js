@@ -5,7 +5,7 @@ const API_URL = 'http://localhost:8080';
 export const login = async(credentials) => {
     try {
         const response = await axios.post(`${API_URL}/login`, credentials);
-        // Verifica la estructura REAL de response.data aquí:
+        // Verifica la estructura REAL 
         console.log("Respuesta RAW del backend:", response.data);
 
         if (response.data) {
@@ -16,18 +16,12 @@ export const login = async(credentials) => {
               role: "ADMINISTRADOR",
               correoElectronico: response.data.correoElectronico || response.data.result?.correoElectronico,
               idUsuario: response.data.usuarioId || response.data.result?.usuarioId
-              /*token: response.data.token,
-              role: "ADMINISTRADOR", // Hardcodeado temporalmente
-              correoElectronico: response.data.correoElectronico,
-              idUsuario: response.data.usuarioId, // Asegúrate que coincida con el backend
-              expirationTime: response.data.expiracion*/
             },
           message: response.data.text || "Inicio de sesión exitoso"
           };
         }
         return {
           success: false,
-          //message: error.response?.data?.message || "Error al iniciar sesión"
           message: "Formato inválido"
         };        
     } catch (error) {

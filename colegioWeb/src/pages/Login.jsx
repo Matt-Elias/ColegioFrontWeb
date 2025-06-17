@@ -30,32 +30,19 @@ const Login = () => {
             console.log("Respuesta completa del login:", result);
 
             if (result.success) {
-            // Asegúrate que result.data tenga la estructura correcta
+
                 if (!result.data.token || !result.data.idUsuario) {
                     throw new Error("Datos de autenticación incompletos");
                 }
                 authLogin(result.data, navigate);
-                /*authLogin({
-                    token: result.data.token,
-                    role: result.data.role,
-                    correoElectronico: result.data.correoElectronico,
-                    idUsuario: result.data.idUsuario
-                }, navigate);*/
+        
             } else {
             setError(result.message);
             }
 
-            /*if (result.success && result.data && result.data.data) {
-                authLogin(result.data.data, navigate);
-            } else {
-                setError(result.message || "Credenciales incorrectas");
-                console.error("Error detallado:", result);
-            }*/
-
         } catch (err) {
-            //setError("Error en la conexión");
             setError(err.message);
-            console.error("Error completo:", err); // ← Para depuración
+            console.error("Error completo:", err); // Depuracion
         }
     };
 

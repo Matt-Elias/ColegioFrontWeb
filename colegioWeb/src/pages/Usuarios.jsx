@@ -1,14 +1,32 @@
 import React, { useState } from "react";
-import {adminLinks} from "../routers/links";
-//import {useAuth} from "";
+import HeadlessDemo  from "../components/Sidebar";
 
 const Usuarios = () => {
-    const {user} = useAuth();
-    const {data, loading, error} = useFetch("");
 
     return(
         <div>
+            <HeadlessDemo />
             <h1>Usuarios</h1>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre completo</th>
+                        <th>Correo electronico</th>
+                        <th>tipo de usuario</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td> <button>Editar</button> </td>
+                        <td> <button>Eliminar</button> </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     );
 }
