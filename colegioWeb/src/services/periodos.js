@@ -18,5 +18,6 @@ export const modificarPeriodo = async (periodo) => {
     const response = await axios.put(`${API_URL}/modificarPeriodo`, periodo, {
         headers: {Authorization: `Bearer ${getToken()}`}
     });
+    return response.data;
 }
 

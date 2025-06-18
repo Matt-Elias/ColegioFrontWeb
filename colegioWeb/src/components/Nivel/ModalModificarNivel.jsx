@@ -5,11 +5,20 @@ function ModalModificarNivel ({nivel, cerrar, recargar}) {
     const [nombreNivel, setNombreNivel] = useState("");
 
     useEffect(() => {
-        setNombreNivel(nivel.nivelAcademico || "");
+        // Verificar si nivel existe antes de acceder a sus propiedades
+        if (nivel) {
+            setNombreNivel(nivel.nivelAcademico || "");
+        }
     }, [nivel]);
 
     const guardar = async () => {
-        await modificarNivel({ idNivel: nivel.idNivel, nivelAcademico: nombreNivel});
+        // Verificar nuevamente antes de guardar
+        if (!nivel) return;
+
+        await modificarNivel({ 
+            idNivel: nivel.idNivel, 
+            nivelAcademico: nombreNivel
+            });
         recargar();
         cerrar();
     }
