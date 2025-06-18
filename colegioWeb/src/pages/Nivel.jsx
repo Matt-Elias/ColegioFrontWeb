@@ -44,7 +44,7 @@ const Nivel = () => {
             <Sidebar/>
             <div className="flex-1 ml-12 p-6 transition-all duration-300">
                 <div>
-                    <h1 className="px-3 py-2 whitespace-nowrap  mt-2 text-left text-3xl font-bold tracking-tight text-gray-500">Niveles Academicos</h1>
+                    <h1 className="px-3 py-2 whitespace-nowrap  mt-2 text-left text-3xl font-bold tracking-tight text-gray-500"> Niveles Academicos </h1>
 
                     <button className="px-3 py-2 whitespace-nowrap ml-3 rounded-md bg-green-500 text-sm font-semibold text-white shadow-sm hover:bg-green-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-300"
                         onClick={
@@ -71,32 +71,15 @@ const Nivel = () => {
                                         <td className="px-6 py-4 whitespace-nowrap">{nivel.nivelAcademico}</td>
                                         
                                         <td className=""> 
-                                            {/**
-                                             * <checked
-                                                checked={nivel.estado === 1}
-                                                onChange={() => eliminarNiveles(nivel.idNivel)}
-                                                pt={{
-                                                    root: { className: 'w-[3rem] h-[1.75rem]' },  // Tamaño personalizado
-                                                    slider: { 
-                                                        className: nivel.estado === 1 
-                                                        ? '!bg-green-500 !shadow-none' 
-                                                        : '!bg-red-500 !shadow-none' 
-                                                    },
-                                                    handle: { className: '!bg-white' }  // Color del círculo interno
-                                                }}
-                                            />
-                                            * 
-                                            * 
-                                            */}      
+                                        
+                                            <button className="ml-6 rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
+                                                onClick={() => {
+                                                    setNivelSeleccionado(nivel);
+                                                    setModalEditar(true);
+                                                }}>Editar
+                                            </button>
 
-                                        <button className="ml-6 rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
-                                            onClick={() => {
-                                                setNivelSeleccionado(nivel);
-                                                setModalEditar(true);
-                                            }}>Editar
-                                        </button>
-
-                                    </td>
+                                        </td>
 
                                     </tr>
                                 ))
