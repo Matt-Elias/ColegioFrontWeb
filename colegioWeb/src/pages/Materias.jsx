@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const Materias = () => {
-    
+
     return(
         <div>
             <h1>Materias</h1>
-        </div>
+
+        </div>    
     );
 }
 
