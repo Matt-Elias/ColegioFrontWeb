@@ -16,7 +16,7 @@ function ModalModificarGrado ({gradoGrupo, cerrar, recargar}) {
                 setNiveles(response);
     
                 if (gradoGrupo?.nivel?.idNivel) {
-                        setIdNivel(gradoGrupo.nivel.idNivel);
+                    setIdNivel(gradoGrupo.nivel.idNivel);
                 }
                 setLoadingNiveles(false);
     

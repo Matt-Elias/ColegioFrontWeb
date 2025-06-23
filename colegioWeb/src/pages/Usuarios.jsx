@@ -96,15 +96,15 @@ const Usuarios = () => {
         setUsuarioSeleccionado(usuario);
         switch(usuario.tipoUsuario.toLowerCase()) {
             case 'estudiante':
-                setModalVerUEstudiante(true);
+                setModalEditarEstudiante(true);
                 break;
 
             case 'padre':
-                setModalVerUPadre(true);
+                setModalEditarPadre(true);
                 break;
                 
             case 'profesor':
-                setModalVerUProfesor(true);
+                setModalEditarProfesor(true);
                 break;
                 
             default:

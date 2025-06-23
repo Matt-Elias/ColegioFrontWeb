@@ -9,33 +9,27 @@ const BuscadorDesplegable = () => {
     const [buscarTermino, setBuscarTermino] = useState('');
     const selectRef = useRef(null);
     
-        const opciones = [
-            'Grupo 1',
-        'Grupo 2',
-        'Grupo 3',
-        'Grupo 4',
-        'Grupo 5'
-        ];
+    const opciones = ['Grupo 1', 'Grupo 2', 'Grupo 3', 'Grupo 4', 'Grupo 5'];
     
-        const filtrarOpciones = opciones.filter(opcion => 
-            opcion.toLowerCase().includes(buscarTermino.toLowerCase())
-        ); 
+    const filtrarOpciones = opciones.filter(opcion => 
+        opcion.toLowerCase().includes(buscarTermino.toLowerCase())
+    ); 
         
-        const manejarOpcionClick = (opcion) => {
-            setValorSeleccionado(opcion);
-            setBuscarTermino(opcion);
-            setEstaAbierto(false);
-        }
+    const manejarOpcionClick = (opcion) => {
+        setValorSeleccionado(opcion);
+        setBuscarTermino(opcion);
+        setEstaAbierto(false);
+    }
     
-        const limpiarSeleccion = () => {
-            setValorSeleccionado('');
-            setBuscarTermino('');
-            setEstaAbierto(false);
-        }
+    const limpiarSeleccion = () => {
+        setValorSeleccionado('');
+        setBuscarTermino('');
+        setEstaAbierto(false);
+    }
     
-        const desplegable = () => {
-            setEstaAbierto(!estaAbierto);
-        }
+    const desplegable = () => {
+        setEstaAbierto(!estaAbierto);
+    }
 
     return(
         <div>

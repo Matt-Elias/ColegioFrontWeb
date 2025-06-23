@@ -155,7 +155,7 @@ function ModalAgregarUEstudiante ({cerrar, recargar}) {
     return (
         <>
             <div className="px-8 py-6 whitespace-nowrap  transition ease-in-out z-10 absolute top-0 right-0 bottom-0 left-0">
-                <div className="container mx-auto w-11/12 md:w-3/5 max-w-3xl">
+                <div className="container mx-auto w-11/12 md:w-3/5 max-w-2xl">
                     <div className="relative py-8 px-5 md:px-10 bg-white shadow-md rounded border border-gray-400">
                         <h3 className="text-gray-600 font-lg font-bold tracking-normal leading-tight mb-4"> Agregar estudiante</h3>
 
@@ -222,12 +222,12 @@ function ModalAgregarUEstudiante ({cerrar, recargar}) {
                                             />
                 
                                         {buscarTermino && (
-                                            <button className="ml-2 text-gray-400 hover:text-gray-600 focus:outline-none" onClick={limpiarSeleccion}>
+                                            <button className="ml-2 text-gray-400 hover:text-gray-600 focus:outline-none " onClick={limpiarSeleccion}>
                                                 <TiDeleteOutline className="w-5 h-5 text-red-400" />
                                             </button>
                                         )}
                 
-                                        <button className="ml-2 text-gray-400 hover:text-gray-600 focus:outline-none" onClick={desplegable} disabled={loadingGrados}>
+                                        <button className="ml-2 text-gray-400 hover:text-gray-600 focus:outline-none " onClick={desplegable} disabled={loadingGrados}>
                                             {estaAbierto ? (
                                                 <IoIosArrowUp className="w-4 h-4 text-gray-700" />
                                             ): (
@@ -293,6 +293,7 @@ function ModalAgregarUEstudiante ({cerrar, recargar}) {
                         </button>
 
                     </div>
+                    
                 </div>
             </div>
         </>
