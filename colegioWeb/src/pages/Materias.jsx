@@ -2,13 +2,18 @@ import React, { useState, useEffect } from "react";
 import ModalAgregarMateria from "../components/Materia/ModalAgregarMateria";
 import ModalModificarMateria from "../components/Materia/ModalModificarMateria";
 import Sidebar from "../components/Sidebar";
-import {consultarMaterias} from "../services/materias";
+import { consultarMaterias } from "../services/materias";
+import { consultarUsuarios } from "../services/usuarios";
 
 const Materias = () => {
     const [materias, setMaterias] = useState([]);
     const [modalAgregar, setModalAgregar] = useState(false);
     const [modalEditar, setModalEditar] = useState(false);
     const [materiaSeleccionada, setMateriaSeleccionada] = useState(null);
+
+    const [profesores, setProfesores] = useState([]);
+    const [idProfesor, setIdProfesor] = useState("");
+    const [loadingProfesores, setLoadingProfesores] = useState(true);
 
     const [error, setError] = useState();
 
@@ -30,8 +35,41 @@ const Materias = () => {
         }
     }
 
+    const cargarProfesores = async () => {
+        try {
+            const response = await consultarUsuarios();
+            console.log("Datos recibidos de la API para materias: ", response);
+
+            const data = Array.isArray(response) ? response : (response?.data || []);
+            
+            const profesoresFiltrados = data.filter(usuario => {
+                if (!usuario) return false;
+                
+                const tipo = usuario.tipoUsuario?.toLowerCase().trim();
+                return tipo === "profesor";
+            });
+
+            console.log("Profesores filtrados:", profesoresFiltrados);
+
+            //setProfesores(profesoresData);
+            setProfesores(profesoresFiltrados);
+            setLoadingProfesores(false);
+        } catch (error) {
+            console.error("Error cargando profesores:", error);
+            setProfesores([]);
+            setLoadingProfesores(false);
+        }
+    };
+
+    const obtenerNombreProfesor = (idProfesor) => {
+        if (!idProfesor) return "Sin asignar";
+        const profesor = profesores.find(p => p.idUsuario === idProfesor);
+        return profesor?.nombreCompleto || `Profesor ID: ${idProfesor}`;
+    }
+
     useEffect(()=>{
         cargarMaterias();
+        cargarProfesores();
     }, []);
 
     return(
@@ -53,6 +91,7 @@ const Materias = () => {
                                 <th className="px-6 py-3 text-left font-medium text-gray-500"> Materia </th>
                                 <th className="px-6 py-3 text-left font-medium text-gray-500"> Profesor asignado </th>
                                 <th className="px-6 py-3 text-left font-medium text-gray-500"> Asignaciones </th>
+                                <th className="px-6 py-3 text-left font-medium text-gray-500"> Acciones </th>
                            </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
@@ -64,7 +103,7 @@ const Materias = () => {
                                 materias.map((materia) => (
                                     <tr key={materia.idMateria}>
                                         <td className="px-6 py-4 whitespace-nowrap"> {materia.nombreMateria } </td>
-                                        <td className="px-6 py-4 whitespace-nowrap"> {materia.profesor?.idProfesor || `ID:${materia.profesor?.idProfesor}` } </td>
+                                        <td className="px-6 py-4 whitespace-nowrap"> {materia.profesor ? obtenerNombreProfesor(materia.profesor.idProfesor) : 'Sin asignar'} </td>
                                         <td className="px-6 py-4 whitespace-nowrap"> {materia.asignaciones } </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <button className="ml-0  rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"

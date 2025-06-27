@@ -2,13 +2,12 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { TiDeleteOutline } from "react-icons/ti";
 import { IoIosArrowDown } from "react-icons/io";
 import { IoIosArrowUp } from "react-icons/io";
-import { IoMdEye } from "react-icons/io";
-import { IoMdEyeOff } from "react-icons/io";
 import { crearMateria} from "../../services/materias";
+import { consultarUsuarios } from '../../services/usuarios';
 
 function ModalAgregarMateria ({cerrar, recargar}) {
     const [nombreMateria, setNombreMateria] = useState("");
-    const [asginaciones, setAsignaciones] = useState("");
+    const [asignaciones, setAsignaciones] = useState("");
 
     const [profesores, setProfesores] = useState([]);
     const [idProfesor, setIdProfesor] = useState("");
@@ -19,21 +18,61 @@ function ModalAgregarMateria ({cerrar, recargar}) {
     const [buscarTermino, setBuscarTermino] = useState("");
     const selectRef = useRef(null);
 
-    const opciones = ['Grupo 1', 'Grupo 2', 'Grupo 3', 'Grupo 4', 'Grupo 5'];
+    useEffect(()=>{
+        const cargarUsuarioProfesor = async () => {
+            try {
+                const response = await consultarUsuarios();
+                console.log("Datos recibidos de la API materias: ", response);
 
-    const filtrarOpciones = opciones.filter(opcion => 
-        opcion.toLowerCase().includes(buscarTermino.toLowerCase())
-    ); 
+                const data = Array.isArray(response) ? response : (response?.data || []);
+
+                const profesoresFiltrados = data.filter(usuario => {
+                    if (!usuario) return false;
+
+                    const tipo = usuario.tipoUsuario?.toLowerCase().trim();
+                    return tipo === "profesor";
+                });
+
+                console.log("Profesores: ",profesoresFiltrados );
+                setProfesores(profesoresFiltrados);
+                setLoadingProfesores(false);
+            } catch (error) {
+                console.log("Error cargando los usuarios estudiantes", error);
+                setProfesores([]);
+                setLoadingProfesores(false);
+            }
+        }
+        
+        cargarUsuarioProfesor();
+    }, []);
+
+    const filtrarOpciones = useMemo(()=> {
+        if (!Array.isArray(profesores)) return [];
+        
+        return profesores.filter(item => {
+            if (!item) return false;
+
+            const textoBusqueda = `${item.nombreCompleto}`.toLowerCase();
+            const termino = buscarTermino.toLowerCase();
+
+            return textoBusqueda.includes(termino);
+
+        });
+    }, [profesores, buscarTermino]);
         
     const manejarOpcionClick = (opcion) => {
-        setValorSeleccionado(opcion);
-        setBuscarTermino(opcion);
+        if (!opcion) return;
+
+        setValorSeleccionado(`${opcion.nombreCompleto}`);
+        setBuscarTermino(`${opcion.nombreCompleto}`);
+        setIdProfesor(opcion.idUsuario);
         setEstaAbierto(false);
     }
     
     const limpiarSeleccion = () => {
         setValorSeleccionado('');
         setBuscarTermino('');
+        setIdProfesor('');
         setEstaAbierto(false);
     }
     
@@ -42,7 +81,22 @@ function ModalAgregarMateria ({cerrar, recargar}) {
     }
 
     const guardar = async () => {
-        
+        try {
+            const materiaData = {
+                nombreMateria: nombreMateria,
+                asignaciones: asignaciones,
+                profesor: {
+                    idProfesor: idProfesor
+                }
+            }
+
+            await crearMateria(materiaData);
+            cerrar();
+            recargar();
+        } catch (error) {
+            console.error("Error al guardar el padre: ", error);
+            alert("Ocurrio un error al guardar. Verifica la consola con mas detalles.");
+        }
     }
 
     const cancelar = async () =>{
@@ -61,7 +115,7 @@ function ModalAgregarMateria ({cerrar, recargar}) {
                     <input className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Nombre de la materia" value={nombreMateria} onChange={(e) => setNombreMateria(e.target.value)} />
 
                     <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Asignaciones</label>
-                    <input className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Asignaciones" value={asginaciones} onChange={(e) => setAsignaciones(e.target.value)} />
+                    <input className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Asignaciones" value={asignaciones} onChange={(e) => setAsignaciones(e.target.value)} />
 
                     <div>
                         <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Selecciona un grupo</label>
@@ -73,11 +127,11 @@ function ModalAgregarMateria ({cerrar, recargar}) {
                                         setBuscarTermino(e.target.value);
                                         setEstaAbierto(true);
                                     }}
-                                placeholder={loadingProfesores ? "Cargando opciones": "Buscar profesor"}
-                                className="flex-grow outline-none text-gray-600"
-                                onFocus={() => setEstaAbierto(true)} 
-                                disabled={loadingProfesores}
-                                />
+                                    placeholder={loadingProfesores ? "Cargando opciones": "Buscar profesor"}
+                                    className="flex-grow outline-none text-gray-600"
+                                    onFocus={() => setEstaAbierto(true)} 
+                                    disabled={loadingProfesores}
+                                    />
                 
                                 {buscarTermino && (
                                     <button className="ml-2 text-gray-400 hover:text-gray-600 focus:outline-none" onClick={limpiarSeleccion}>
@@ -99,13 +153,13 @@ function ModalAgregarMateria ({cerrar, recargar}) {
                                     {filtrarOpciones.length > 0 ? (
                                         <div className="py-1">
                                             {filtrarOpciones.map((opcion, index)=> {
-                                                if (!opcion || !opcion.usuario) return null;
+                                                if (!opcion) return null;
 
                                                 return(
-                                                    <div key={opcion.idProfesor || index} onClick={()=> manejarOpcionClick(opcion)} 
+                                                    <div key={opcion.idUsuario || index} onClick={()=> manejarOpcionClick(opcion)} 
                                                         className={`cursor-pointer px-3 py-2 text-sm text-gray-600 hover:bg-blue-600 hover:text-white ${
-                                                            valorSeleccionado === opcion.profesores ? 'bg-gray-100 font-medium' : ''
-                                                        }`} > {opcion.profesores}
+                                                            valorSeleccionado === opcion.nombreCompleto ? 'bg-gray-100 font-medium' : ''
+                                                        }`} > {opcion.nombreCompleto}
                                                     </div>
                                                 );
                                             })}

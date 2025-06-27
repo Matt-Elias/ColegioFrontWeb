@@ -3,6 +3,7 @@ import {consultarNiveles, cambiarStatusNivel} from "../services/niveles";
 import ModalAgregarNivel from "../components/Nivel/ModalAgregarNivel";
 import ModalModificarNivel from "../components/Nivel/ModalModificarNivel";
 import Sidebar from "../components/Sidebar";
+import Switch from '@mui/material/Switch';
 
 const Nivel = () => {
     const [niveles, setNiveles] = useState([]);
@@ -21,7 +22,12 @@ const Nivel = () => {
                 throw new Error(`Formato inesperado: ${JSON.stringify(response)}`);
             }
             
-            setNiveles(data);
+            setNiveles(data.map(nivel => ({
+                ...nivel,
+                activo: nivel.status // Todos los switches aparecerán encendidos
+            })));
+
+            //setNiveles(data);
             setError(null);
         } catch (err) {
             console.error("Error cargando niveles:", err);
@@ -30,10 +36,23 @@ const Nivel = () => {
         }
     }
 
-    const eliminarNiveles = async (idNivel) => {
-        await cambiarStatusNivel(idNivel);
-        cargarNiveles();
-    }
+    const cambiarStatus = async (event, idNivel) => {
+        event.preventDefault();
+        try {
+            await cambiarStatusNivel(idNivel);
+            
+            // Actualiza el estado local invirtiendo el valor actual
+            setNiveles(prevNiveles => 
+                prevNiveles.map(nivel => 
+                    nivel.idNivel === idNivel 
+                        ? { ...nivel, status: !nivel.status } // Invertimos el estado
+                        : nivel
+                )
+            );
+        } catch (error) {
+            console.error("Error al cambiar el estado:", error);
+        }
+    };
 
     useEffect(()=> {
         cargarNiveles();
@@ -71,16 +90,15 @@ const Nivel = () => {
                                         <td className="px-6 py-4 whitespace-nowrap">{nivel.nivelAcademico}</td>
                                         
                                         <td className=""> 
-                                        
+                                            <Switch checked={nivel.status} onChange={(e) => cambiarStatus(e, nivel.idNivel)} className="ml-6"/>
+
                                             <button className="ml-6 rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
                                                 onClick={() => {
                                                     setNivelSeleccionado(nivel);
                                                     setModalEditar(true);
                                                 }}>Editar
                                             </button>
-
                                         </td>
-
                                     </tr>
                                 ))
                             ) : (

@@ -3,6 +3,7 @@ import { consultarGrados, cambiarStatusGrado } from "../services/grados";
 import ModalAgregarGrado from "../components/GradosGrupos/ModalAgregarGrado";
 import ModalModificarGrado from "../components/GradosGrupos/ModalModificarGrado";
 import Sidebar from "../components/Sidebar";
+import Switch from '@mui/material/Switch';
 
 const Grados = () => {
     const [gradosGrupos, setGradosGrupos] = useState([]);
@@ -20,8 +21,13 @@ const Grados = () => {
             if (!Array.isArray(data)) {
                 throw new Error (`Formato inesperado: ${JSON.stringify(response)}`);
             }
+            
+            setGradosGrupos(data.map(gradoGrupo => ({
+                ...gradoGrupo,
+                activo: gradoGrupo.status
+            })));
 
-            setGradosGrupos(data);
+            //setGradosGrupos(data);
             setError(null);
         } catch (err) {
             console.error("Error cargando niveles: ", err);
@@ -33,6 +39,22 @@ const Grados = () => {
     useEffect(()=>{
         cargarGrados();
     }, []);
+
+    const cambiarStatus = async (event, idGradoGrupo) => {
+        event.preventDefault();
+        try {
+            await cambiarStatusGrado(idGradoGrupo);
+            setGradosGrupos(prevGrados =>
+                prevGrados.map(gradoGrupo => 
+                    gradoGrupo.idGradoGrupo === idGradoGrupo
+                        ? { ...gradoGrupo, status: !gradoGrupo.status}
+                        : gradoGrupo
+                )
+            );
+        } catch (error) {
+            console.error("Error al cambiar el estado:", error);
+        }
+    }
 
     return(
         <div className="flex min-h-screen"> 
@@ -66,7 +88,9 @@ const Grados = () => {
                                         <td className="px-6 py-4 whitespace-nowrap"> {gradoGrupo.gradoGrupo} </td>
                                         <td className="px-6 py-4 whitespace-nowrap"> {gradoGrupo.nivel?.nivelAcademico || `ID: ${gradoGrupo.nivel?.idNivel}`} </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <button className="ml-0  rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
+                                            <Switch checked={gradoGrupo.status} onChange={(e) => cambiarStatus(e, gradoGrupo.idGradoGrupo)} className="ml-0"/>
+                                            
+                                            <button className="ml-6  rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
                                                 onClick={()=> {
                                                     setGradoSeleccionado(gradoGrupo);
                                                     setModalEditar(true);

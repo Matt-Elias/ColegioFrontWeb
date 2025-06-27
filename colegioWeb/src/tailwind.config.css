@@ -1,0 +1,24 @@
+/* Estilo general del calendario para que combine mejor */
+.rbc-calendar {
+  @apply bg-white text-gray-700 rounded-lg shadow-md p-4;
+}
+
+.rbc-header {
+  @apply bg-gray-100 text-gray-600 text-sm font-semibold py-2 px-3 border-b;
+}
+
+.rbc-day-bg {
+  @apply border border-gray-200;
+}
+
+.rbc-time-slot {
+  @apply border-t border-gray-200;
+}
+
+.rbc-event {
+  @apply bg-sky-500 text-white text-sm px-2 py-1 rounded shadow-sm;
+}
+
+.rbc-toolbar-label {
+  @apply text-lg font-bold text-gray-800;
+}

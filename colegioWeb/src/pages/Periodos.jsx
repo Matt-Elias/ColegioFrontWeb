@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import {consultarPeriodos} from "../services/periodos";
 import ModalModificarPeriodos from "../components/Periodos/ModalModificarPeriodos";
+import ModalAgregarPeriodos from "../components/Periodos/ModalAgregarPeriodos";
 import Sidebar from "../components/Sidebar";
 
 const Periodos = () => {
     const [periodos, setPeriodos] = useState([]);
+    const [modalAgregar, setModalAgregar] = useState(false);
     const [modalEditar, setModalEditar] = useState(false);
     const [periodoSeleccionado, setPeriodoSeleccionado] = useState(null);
 
@@ -38,6 +40,12 @@ const Periodos = () => {
             <div className="flex-1 ml-12 p-6 transition-all duration-300">
                 <div>
                     <h1 className="px-3 py-2 whitespace-nowrap  mt-2 text-left text-3xl font-bold tracking-tight text-gray-500"> Periodos </h1>
+
+                    <button className="px-3 py-2 whitespace-nowrap ml-3 rounded-md bg-green-500 text-sm font-semibold text-white shadow-sm hover:bg-green-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-300"
+                        onClick={
+                            () => setModalAgregar(true)
+                        }> Agregar periodo 
+                    </button>
 
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead>
@@ -86,6 +94,13 @@ const Periodos = () => {
                     </table>
                 </div>
             </div>
+
+            {modalAgregar && (
+                <ModalAgregarPeriodos 
+                    cerrar = {()=> setModalAgregar(false)}
+                    recargar={cargarPeriodos}
+                />
+            )}
 
             {modalEditar && (
                 <ModalModificarPeriodos

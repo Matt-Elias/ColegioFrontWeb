@@ -33,6 +33,6 @@ export const cambiarStatusNivel = async (idNivel) => {
     const response = await axios.put(`${API_URL}/cambiarStatus`, {idNivel}, {
         headers: {Authorization: `Bearer ${getToken()}`}
     });
-    return response.data;
+    //return response.data;
 }
 

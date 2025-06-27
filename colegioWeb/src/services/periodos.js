@@ -14,6 +14,13 @@ export const consultarPeriodos = async () => {
     return response.data.result || [];
 }
 
+export const crearPeriodo = async (periodo) => {
+    const response = await axios.post(`${API_URL}/registrarPeriodo`, periodo, {
+        headers: {Authorization: `Bearer ${getToken()}`}
+    });
+    return response.data;
+}
+
 export const modificarPeriodo = async (periodo) => {
     const response = await axios.put(`${API_URL}/modificarPeriodo`, periodo, {
         headers: {Authorization: `Bearer ${getToken()}`}

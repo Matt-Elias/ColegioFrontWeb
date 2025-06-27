@@ -21,7 +21,7 @@ export const crearMateria = async (materia) => {
     return response.data;
 }
 
-export const modificarGrado = async (materia) => {
+export const modificarMateria = async (materia) => {
     const response = await axios.put(`${API_URL}/modificarMateria`, materia, {
         headers: {Authorization: `Bearer ${getToken()}`}
     });

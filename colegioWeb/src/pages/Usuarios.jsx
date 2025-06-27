@@ -10,6 +10,7 @@ import ModalSeleccionarUsuario from "../components/Usuarios/ModalSeleccionarUsua
 import ModalVerUEstudiante from "../components/Usuarios/ModalVerUEstudiante";
 import ModalVerUPadre from "../components/Usuarios/ModalVerUPadre";
 import ModalVerUProfesor from "../components/Usuarios/ModalVerUProfesor";
+import Switch from '@mui/material/Switch';
 
 const Usuarios = () => {
     const [usuarios, setUsuarios] = useState([]);
@@ -33,7 +34,13 @@ const Usuarios = () => {
             try {
                 setLoading(true);
                 const data = await consultarUsuarios();
-                setUsuarios(data);
+                //setUsuarios(data);
+
+                setUsuarios(data.map(usuario => ({
+                    ...usuario,
+                    activo: usuario.status
+                })));
+                
                 setLoading(false);
             } catch (err) {
                 setError("Error al cargar los usuarios");
@@ -43,6 +50,23 @@ const Usuarios = () => {
         }
         cargarUsuarios();
     }, []);
+
+    const cambiarStatus = async (event, idUsuario) => {
+        event.preventDefault();
+        try {
+            await cambiarStatusUsuario(idUsuario);
+
+            setUsuarios(prevUsuario =>
+                prevUsuario.map(usuario => 
+                    usuario.idUsuario === idUsuario
+                        ? { ...usuario, status: !usuario.status } : usuario
+                )  
+            );
+
+        } catch (error) {
+            console.error("Error al cambiar el estado:", error);
+        }
+    };
 
     // Función para recargar usuarios después de agregar/modificar
     const recargarUsuarios = async () => {
@@ -192,6 +216,8 @@ const Usuarios = () => {
                                         <td className="px-6 py-4 whitespace-nowrap"> {usuario.tipoUsuario} </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex gap-6">
+                                                <Switch checked={usuario.status} onChange={(e) => cambiarStatus(e, usuario.idUsuario)} className="ml-0"/>
+
                                                 <button className="rounded-md bg-gray-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300" 
                                                     onClick={() => {
                                                         manejarVerUsuario(usuario);

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { IoMdEye } from "react-icons/io";
 import { IoMdEyeOff } from "react-icons/io";
+import ColegioFondo from "../../img/ColegioFondo.png";
 import LogoUsuario from "../../img/LogoUsuario2.png";
 
 import {consultarGrados} from "../../services/grados";
@@ -59,7 +60,7 @@ function ModalVerUEstudiante ({usuario, cerrar}) {
                     <div className="relative py-8 px-5 md:px-10 bg-white shadow-md rounded border border-gray-400" >
 
                         <div className="rounded-t h-32 overflow-hidden">
-                            <img className="object-cover object-top w-full" src='https://lh3.googleusercontent.com/gps-cs-s/AC9h4npYe7XZ4sHkLz1mvH3Xz80y7F09V9AyjXetLORUAPU6PRIpMiD8N-6_VP1ZAyVITqSMEYyIfqzZZUY8Ob_zLpOLCMSNFmvOD9icwb4G-jjhB8_ULBgki192E8m1hSmUHtSeCr6o=s680-w680-h510-rw' />
+                            <img className="object-cover object-top w-full" src={ColegioFondo} />
                         </div>
                         
                         <div className="mx-auto w-32 h-32 relative -mt-16 border-3 border-white rounded-full overflow-hidden">
