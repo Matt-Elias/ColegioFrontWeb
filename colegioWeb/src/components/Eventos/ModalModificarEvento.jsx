@@ -51,7 +51,7 @@ function ModalModificarEvento ({evento, cerrar, recargar}) {
                 idEvento: evento.id,
                 titulo,
                 descripcion,
-                colorEtiqueta,
+                colorEtiqueta: colorEtiqueta,
                 idUsuario,
                 fechaInicio: fechaInicio.toISOString(),
                 fechaFin: fechaFin.toISOString()

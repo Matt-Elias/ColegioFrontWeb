@@ -1,37 +1,37 @@
-import React from "react";
-import { QRCodeCanvas } from "qrcode.react";
+import React, { forwardRef, useImperativeHandle, useRef } from 'react';
+import { QRCodeCanvas } from 'qrcode.react';
 
-const QRGenerator = () => {
-  const value = "https://ejemplo.com";
+const QRGenerator = forwardRef(({ estudianteData, size = 128 }, ref) => {
+  const canvasRef = useRef();
 
-  const downloadQR = () => {
-    const canvas = document.getElementById("qr-gen");
-    const pngUrl = canvas
-      .toDataURL("image/png")
-      .replace("image/png", "image/octet-stream");
-    const downloadLink = document.createElement("a");
-    downloadLink.href = pngUrl;
-    downloadLink.download = "codigo_qr.png";
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-  };
+  useImperativeHandle(ref, () => ({
+    getQRAsImage: () => {
+      return new Promise((resolve) => {
+        if (!canvasRef.current) return resolve(null);
+
+        const canvas = canvasRef.current.querySelector('canvas');
+        if (!canvas) return resolve(null);
+
+        const imageData = canvas.toDataURL('image/png');
+        resolve(imageData);
+      });
+    }
+  }));
+
+  const qrData = JSON.stringify(estudianteData);
 
   return (
-    <div>
+    <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }} ref={canvasRef}>
       <QRCodeCanvas
-        id="qr-gen"
-        value={value}
-        size={256}
+        value={qrData}
+        size={size}
         bgColor="#FFFFFF"
         fgColor="#000000"
         level="H"
         includeMargin={true}
       />
-      <br />
-      <button onClick={downloadQR}>Descargar QR</button>
     </div>
   );
-};
+});
 
 export default QRGenerator;

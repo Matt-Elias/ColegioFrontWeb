@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { IoMdChatboxes } from "react-icons/io";
+//import { IoMdChatboxes } from "react-icons/io";
+import { FaClipboardList } from "react-icons/fa";
 import { MdEventNote } from "react-icons/md";
 import { MdGroups } from "react-icons/md";
 import { FaBookBookmark } from "react-icons/fa6";
@@ -65,11 +66,11 @@ function Sidebar () {
                         {expandir && <span className="ml-4 whitespace-nowrap">Grados y grupos</span>}
                     </Link>
 
-                    <Link to="/chats" className="flex items-center w-full p-3 rounded hover:bg-sky-600 hover:text-white transition-colors"
+                    <Link to="/listado" className="flex items-center w-full p-3 rounded hover:bg-sky-600 hover:text-white transition-colors"
                         onClick={() => setExpandir(!expandir)}
                     >
-                        <IoMdChatboxes className="w-6 h-6" />
-                        {expandir && <span className="ml-4 whitespace-nowrap">Chats</span>}
+                        <FaClipboardList className="w-6 h-6" />
+                        {expandir && <span className="ml-4 whitespace-nowrap">Asistencias</span>}
                     </Link>     
 
                     <Link to="/login" className="flex items-center w-full p-3 hover:bg-sky-600 hover:text-white transition-colors border-t border-gray-300"

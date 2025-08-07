@@ -6,6 +6,7 @@ import Materias from "../pages/Materias";
 import Grados from "../pages/Grados";
 import Eventos from "../pages/Eventos";
 import Chats from "../pages/Chats";
+import Listado from "../pages/Listado";
 
 import Login from "../pages/Login";
 import ProtectedRoute from "../context/ProtectedRoute";
@@ -54,6 +55,12 @@ const RouterAdmin = () => {
             <Route path="/chats" element={
                 <ProtectedRoute requiredRole={"ADMINISTRADOR"}>
                     <Chats/>
+                </ProtectedRoute>
+            }/>
+
+            <Route path="/listado" element={
+                <ProtectedRoute requiredRole={"ADMINISTRADOR"}>
+                    <Listado/>
                 </ProtectedRoute>
             }/>
 

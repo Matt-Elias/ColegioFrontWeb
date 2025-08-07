@@ -3,6 +3,9 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { login } from "../services/authService";
 import Logo from "../img/LogoColegio.png";
+import { IoIosClose } from "react-icons/io";
+import { IoMdEye } from "react-icons/io";
+import { IoMdEyeOff } from "react-icons/io";
 
 const Login = () => {
     const [credentials, setCredentials] = useState({
@@ -13,6 +16,7 @@ const Login = () => {
     const [error, setError] = useState('');
     const { login: authLogin } = useAuth();
     const navigate = useNavigate();
+    const [esVisible, setEsVisible] = useState(false);
 
     const handleChange = (e) => {
         setCredentials({
@@ -20,6 +24,8 @@ const Login = () => {
         [e.target.name]: e.target.value
         });
     };
+
+    const toogleVisibilidad = () => setEsVisible((prev) => !prev); 
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -37,7 +43,8 @@ const Login = () => {
                 authLogin(result.data, navigate);
         
             } else {
-            setError(result.message);
+                //setError(result.message);
+                setError("El correo o la contraseña son incorrectos");
             }
 
         } catch (err) {
@@ -67,10 +74,24 @@ const Login = () => {
                     
                     <div>
                         <label className="block text-sm font-medium text-white">Contraseña</label>
-                        <div className="mt-1">
-                            <input id="contrasena" name="contrasena" type="password" autoComplete="password" required
+                        <div className="mt-1 relative">
+                            <input 
+                                id="contrasena" 
+                                name="contrasena" 
+                                type={esVisible ? "text" : "password"} 
+                                autoComplete="current-password" 
+                                required
                                 className="px-2 py-3 mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-sky-500 sm:text-sm text-white"
-                                value={credentials.contrasena} onChange={handleChange} />
+                                value={credentials.contrasena} 
+                                onChange={handleChange} 
+                            />
+                            <button 
+                                type="button"
+                                onClick={toogleVisibilidad}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-white focus:outline-none"
+                            >
+                                {esVisible ? <IoMdEyeOff size={20} /> : <IoMdEye size={20} />}
+                            </button>
                         </div>
                     </div>
 
@@ -80,10 +101,28 @@ const Login = () => {
                             focus:ring-offset-2"
                             >
                                 Iniciar Sesion
-                            </button>
+                        </button>
                     </div>
 
                 </form>
+
+                {error && (
+                    <div className="flex justify-between items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 my-2 rounded" role="alert">
+                        <span className="block sm:inline pl-2">
+                            <strong className="font-bold">Error</strong>
+                            {error === "El correo o la contraseña son incorrectos" 
+                                ? " El correo o la contraseña son incorrectos"
+                                : ` ${error}`}
+                        </span>
+                        <button 
+                            type="button"
+                            onClick={() => setError('')}
+                            className="text-red-700 hover:text-red-900 focus:outline-none"
+                        >
+                            <IoIosClose size={24} />
+                        </button>
+                    </div>
+                )}
 
             </div>
         </div>

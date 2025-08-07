@@ -51,7 +51,7 @@ const Eventos = (props) => {
                 start: dayjs(evento.fechaInicio).tz("America/Mexico_City").toDate(), // Ajusta a CDMX
                 end: dayjs(evento.fechaFin).tz("America/Mexico_City").toDate(),     // Ajusta a CDMX
                 descripcion: evento.descripcion,
-                color: evento.colorEtiqueta,
+                color: evento.color_etiqueta || "#FFFFFF",
                 allDay: dayjs(evento.fechaInicio).isSame(evento.fechaFin, 'day') // Evento de todo el día si comienza y termina el mismo día 
             })); 
 
@@ -97,10 +97,10 @@ const Eventos = (props) => {
 
     const getMonthName = (date) => {
         const monthNames = [
-        "January", "February", "March",
-        "April", "May", "June", "July",
-        "August", "September", "October",
-        "November", "December"
+        "Enero", "Febrero", "Marzo",
+        "Abril", "Mayo", "Junio", 
+        "Julio", "Agosto", "Septiembre",
+        "Octubre", "Noviembre", "Diciembre"
         ];
         return monthNames[date.getMonth()];
     };
@@ -109,6 +109,22 @@ const Eventos = (props) => {
         // Convierte HEX a RGB, oscurece y vuelve a HEX
         // Implementación completa disponible si la necesitas
         return hex; // Simplificado para el ejemplo
+    }
+
+    function getContrastColor(hex) {
+        if (!hex) return "#000000";
+        hex = hex.replace(/^#/, '');
+        
+        // Convierte a RGB
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        
+        // Calcula el brillo (fórmula de luminosidad)
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        
+        // Devuelve negro para fondos claros, blanco para fondos oscuros
+        return brightness > 128 ? "#000000" : "#FFFFFF";
     }
 
     return(
@@ -125,7 +141,7 @@ const Eventos = (props) => {
 
                 {/* Botones de navegación */}
                 <div className="flex items-center space-x-2">
-                    <button type="button" className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm text-gray-700 hover:bg-gray-50" onClick={prevMonth}>Atras</button>
+                    <button type="button" className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm text-gray-700 hover:bg-gray-50" onClick={prevMonth}>Anterior</button>
                     <button type="button" className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm text-gray-700 hover:bg-gray-50" onClick={currentMonth}>Actual</button>
                     <button type="button" className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm text-gray-700 hover:bg-gray-50" onClick={nextMonth}>Siguiente</button>
 
@@ -149,6 +165,7 @@ const Eventos = (props) => {
                     style={{ height: 600 }}
                     toolbar={false}
                     onSelectEvent={manejarSelectEvento}
+                    date={currentDate}
                     onNavigate={(date)=> setCurrentDate(date)}
                     messages={{
                         today: "Hoy",
@@ -168,7 +185,7 @@ const Eventos = (props) => {
                         <div 
                             className="px-2 py-1 rounded text-xs font-medium cursor-pointer"
                             style={{ 
-                                backgroundColor: event.colorEtiqueta || '#3b82f6',
+                                backgroundColor: event.colorEtiqueta,
                                 color: '#ffffff',
                                 border: `1px solid ${darkenColor(event.colorEtiqueta)}`,
                                 whiteSpace: 'nowrap',

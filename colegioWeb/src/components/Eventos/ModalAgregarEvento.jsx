@@ -60,7 +60,7 @@ function ModalAgregarEvento ({cerrar, recargar}) {
             await crearEventos({
                 titulo,
                 descripcion,
-                colorEtiqueta,
+                colorEtiqueta: colorEtiqueta,
                 idUsuario,
                 fechaInicio: fechaInicio.toISOString(),
                 fechaFin: fechaFin.toISOString()
