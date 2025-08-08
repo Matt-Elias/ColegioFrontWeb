@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Sidebar from "../components/Sidebar";
 import { cambiarStatusUsuario, consultarUsuarios } from "../services/usuarios";
 
@@ -11,6 +11,7 @@ import ModalVerUEstudiante from "../components/Usuarios/ModalVerUEstudiante";
 import ModalVerUPadre from "../components/Usuarios/ModalVerUPadre";
 import ModalVerUProfesor from "../components/Usuarios/ModalVerUProfesor";
 import Switch from '@mui/material/Switch';
+import { Paginacion } from "../components/Paginacion";
 
 const Usuarios = () => {
     const [usuarios, setUsuarios] = useState([]);
@@ -28,6 +29,9 @@ const Usuarios = () => {
     const [modalVerUEstudiante, setModalVerUEstudiante] = useState(false);
     const [modalVerUPadre, setModalVerUPadre] = useState(false);
     const [modalVerUProfesor, setModalVerUProfesor] = useState(false);
+
+    const [paginaActual, setPaginaActual] = useState(1);
+    const [itemsPorPagina, setItemsPorPagina] = useState(10);
 
     useEffect(()=> {
         const cargarUsuarios = async () => {
@@ -137,6 +141,25 @@ const Usuarios = () => {
         }        
     }
 
+    const usuariosPaginados = useMemo(() => {
+        const inicio = (paginaActual - 1) * itemsPorPagina;
+        const fin = inicio + itemsPorPagina;
+        return usuariosOrdenados.slice(inicio, fin);
+    }, [usuariosOrdenados, paginaActual, itemsPorPagina]);
+
+    const totalPaginas = useMemo(() => {
+        return Math.ceil(usuariosOrdenados.length / itemsPorPagina);
+    }, [usuariosOrdenados, itemsPorPagina]);
+
+    const cambiarPagina = (nuevaPagina) => {
+        setPaginaActual(nuevaPagina);
+    };
+
+    const cambiarItemsPorPagina = (nuevoNumero) => {
+        setItemsPorPagina(nuevoNumero);
+        setPaginaActual(1); // Resetear a la primera página
+    };
+
     if (loading) {
         return (
             <div className="flex min-h-screen">
@@ -208,8 +231,8 @@ const Usuarios = () => {
                         </thead>
 
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {usuariosOrdenados.length > 0 ? (
-                                usuariosOrdenados.map((usuario) => (
+                            {usuariosPaginados.length > 0 ? (
+                                usuariosPaginados.map((usuario) => (
                                     <tr key={usuario.idUsuario}>
                                         <td className="px-6 py-4 whitespace-nowrap"> {usuario.nombreCompleto} </td>
                                         <td className="px-6 py-4 whitespace-nowrap"> {usuario.correoElectronico} </td>
@@ -245,6 +268,14 @@ const Usuarios = () => {
                             )}    
                         </tbody>
                     </table>
+
+                    <Paginacion 
+                        paginaActual={paginaActual}
+                        totalPaginas={totalPaginas}
+                        cambiarPagina={cambiarPagina}
+                        itemsPorPagina={itemsPorPagina}
+                        cambiarItemsPorPagina={cambiarItemsPorPagina}
+                    />
                 </div>
             </div>
             

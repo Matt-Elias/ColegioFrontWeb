@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { consultarGrados, cambiarStatusGrado } from "../services/grados";
 import ModalAgregarGrado from "../components/GradosGrupos/ModalAgregarGrado";
 import ModalModificarGrado from "../components/GradosGrupos/ModalModificarGrado";
 import Sidebar from "../components/Sidebar";
 import Switch from '@mui/material/Switch';
+import { Paginacion } from "../components/Paginacion";
 
 const Grados = () => {
     const [gradosGrupos, setGradosGrupos] = useState([]);
@@ -12,6 +13,8 @@ const Grados = () => {
     const [gradoSeleccionado, setGradoSeleccionado] = useState(null);
 
     const [error, setError] = useState();
+    const [paginaActual, setPaginaActual] = useState(1);
+    const [itemsPorPagina, setItemsPorPagina] = useState(10);
 
     const cargarGrados = async () => {
         try {
@@ -56,6 +59,25 @@ const Grados = () => {
         }
     }
 
+    const gradosPaginados = useMemo(() => {
+        const inicio = (paginaActual - 1) * itemsPorPagina;
+        const fin = inicio + itemsPorPagina;
+        return gradosGrupos.slice(inicio, fin);
+    }, [gradosGrupos, paginaActual, itemsPorPagina]);
+
+    const totalPaginas = useMemo(() => {
+        return Math.ceil(gradosGrupos.length / itemsPorPagina);
+    }, [gradosGrupos, itemsPorPagina]);
+
+    const cambiarPagina = (nuevaPagina) => {
+        setPaginaActual(nuevaPagina);
+    };
+
+    const cambiarItemsPorPagina = (nuevoNumero) => {
+        setItemsPorPagina(nuevoNumero);
+        setPaginaActual(1); // Resetear a la primera página
+    };
+
     return(
         <div className="flex min-h-screen"> 
             <Sidebar/>
@@ -82,8 +104,8 @@ const Grados = () => {
                                 <tr>
                                     <td className="px-6 py-4 whitespace-nowrap" colSpan="2" style={{color: 'red'}}> {error} </td>
                                 </tr>
-                            ): gradosGrupos.length > 0 ? (
-                                gradosGrupos.map((gradoGrupo)=>(
+                            ): gradosPaginados.length > 0 ? (
+                                gradosPaginados.map((gradoGrupo)=>(
                                     <tr key={gradoGrupo.idGradoGrupo}>
                                         <td className="px-6 py-4 whitespace-nowrap"> {gradoGrupo.gradoGrupo} </td>
                                         <td className="px-6 py-4 whitespace-nowrap"> {gradoGrupo.nivel?.nivelAcademico || `ID: ${gradoGrupo.nivel?.idNivel}`} </td>
@@ -107,7 +129,15 @@ const Grados = () => {
                             )}
 
                         </tbody>
-                    </table>              
+                    </table>     
+
+                    <Paginacion 
+                        paginaActual={paginaActual}
+                        totalPaginas={totalPaginas}
+                        cambiarPagina={cambiarPagina}
+                        itemsPorPagina={itemsPorPagina}
+                        cambiarItemsPorPagina={cambiarItemsPorPagina}
+                    />         
                 </div>
             </div>
 

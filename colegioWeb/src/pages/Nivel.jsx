@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {consultarNiveles, cambiarStatusNivel} from "../services/niveles";
 import ModalAgregarNivel from "../components/Nivel/ModalAgregarNivel";
 import ModalModificarNivel from "../components/Nivel/ModalModificarNivel";
 import Sidebar from "../components/Sidebar";
 import Switch from '@mui/material/Switch';
+import { Paginacion } from "../components/Paginacion";
 
 const Nivel = () => {
     const [niveles, setNiveles] = useState([]);
@@ -12,6 +13,8 @@ const Nivel = () => {
     const [nivelSeleccionado, setNivelSeleccionado] = useState(null);
 
     const [error, setError] = useState();
+    const [paginaActual, setPaginaActual] = useState(1);
+    const [itemsPorPagina, setItemsPorPagina] = useState(10);
     
     const cargarNiveles = async () => {
         try {
@@ -58,6 +61,25 @@ const Nivel = () => {
         cargarNiveles();
     }, []);
 
+    const nivelesPaginados = useMemo(() => {
+        const inicio = (paginaActual - 1) * itemsPorPagina;
+        const fin = inicio + itemsPorPagina;
+        return niveles.slice(inicio, fin);
+    }, [niveles, paginaActual, itemsPorPagina]);
+
+    const totalPaginas = useMemo(() => {
+        return Math.ceil(niveles.length / itemsPorPagina);
+    }, [niveles, itemsPorPagina]);
+
+    const cambiarPagina = (nuevaPagina) => {
+        setPaginaActual(nuevaPagina);
+    };
+
+    const cambiarItemsPorPagina = (nuevoNumero) => {
+        setItemsPorPagina(nuevoNumero);
+        setPaginaActual(1); // Resetear a la primera página
+    };    
+
     return(
         <div className="flex min-h-screen">
             <Sidebar/>
@@ -84,8 +106,8 @@ const Nivel = () => {
                                 <tr>
                                     <td className="px-6 py-4 whitespace-nowrap" colSpan="2" style={{color: 'red'}}>{error}</td>
                                 </tr>
-                            ) : niveles.length > 0 ? (
-                                niveles.map((nivel) => (
+                            ) : nivelesPaginados.length > 0 ? (
+                                nivelesPaginados.map((nivel) => (
                                     <tr key={nivel.idNivel}>
                                         <td className="px-6 py-4 whitespace-nowrap">{nivel.nivelAcademico}</td>
                                         
@@ -109,6 +131,15 @@ const Nivel = () => {
                         </tbody>
 
                     </table>
+
+                    <Paginacion 
+                        paginaActual={paginaActual}
+                        totalPaginas={totalPaginas}
+                        cambiarPagina={cambiarPagina}
+                        itemsPorPagina={itemsPorPagina}
+                        cambiarItemsPorPagina={cambiarItemsPorPagina}
+                    /> 
+
                 </div>
             </div>
 

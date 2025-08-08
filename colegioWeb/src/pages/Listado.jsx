@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Sidebar from "../components/Sidebar";
 import { consultarListado } from "../services/listado";
 import estudiante from "../services/estudiante";
+import { Paginacion } from "../components/Paginacion";
 
 const Listado = () => {
     const [listados, setListados] = useState([]);
     const [error, setError] = useState();
     const [fechaActual, setFechaActual] = useState("");
     const [estudiantesMap, setEstudiantesMap] = useState({});
+    const [paginaActual, setPaginaActual] = useState(1);
+    const [itemsPorPagina, setItemsPorPagina] = useState(10);
 
     const cargarDatos = async () => {
         try {
@@ -90,6 +93,25 @@ const Listado = () => {
         return date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
     };
 
+    const listadoPaginado = useMemo(() => {
+        const inicio = (paginaActual - 1) * itemsPorPagina;
+        const fin = inicio + itemsPorPagina;
+        return listados.slice(inicio, fin);
+    }, [listados, paginaActual, itemsPorPagina]);
+
+    const totalPaginas = useMemo(() => {
+        return Math.ceil(listados.length / itemsPorPagina);
+    }, [listados, itemsPorPagina]);
+    
+    const cambiarPagina = (nuevaPagina) => {
+        setPaginaActual(nuevaPagina);
+    };
+    
+    const cambiarItemsPorPagina = (nuevoNumero) => {
+        setItemsPorPagina(nuevoNumero);
+        setPaginaActual(1); // Resetear a la primera página
+    };
+
     return(
         <div className="flex min-h-screen">
             <Sidebar/>
@@ -113,8 +135,8 @@ const Listado = () => {
                             <tr>
                                 <td className="px-6 py-4 whitespace-nowrap" colSpan="2" style={{color: 'red'}}> {error} </td>
                             </tr>
-                        ) : listados.length > 0 ? (
-                            listados.map((listado) => {
+                        ) : listadoPaginado.length > 0 ? (
+                            listadoPaginado.map((listado) => {
                                 const estudiante = estudiantesMap[listado.estudiante_id] || {};
                                 return (
                                     <tr key={listado.id_registro_asistencia}>
@@ -144,6 +166,14 @@ const Listado = () => {
 
                     </tbody> 
                 </table>
+
+                <Paginacion 
+                    paginaActual={paginaActual}
+                    totalPaginas={totalPaginas}
+                    cambiarPagina={cambiarPagina}
+                    itemsPorPagina={itemsPorPagina}
+                    cambiarItemsPorPagina={cambiarItemsPorPagina}
+                />   
 
             </div>
 

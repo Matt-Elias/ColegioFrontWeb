@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {consultarPeriodos} from "../services/periodos";
 import ModalModificarPeriodos from "../components/Periodos/ModalModificarPeriodos";
 import ModalAgregarPeriodos from "../components/Periodos/ModalAgregarPeriodos";
 import Sidebar from "../components/Sidebar";
+import { Paginacion } from "../components/Paginacion";
 
 const Periodos = () => {
     const [periodos, setPeriodos] = useState([]);
@@ -11,6 +12,8 @@ const Periodos = () => {
     const [periodoSeleccionado, setPeriodoSeleccionado] = useState(null);
 
     const [error, setError] = useState();
+    const [paginaActual, setPaginaActual] = useState(1);
+    const [itemsPorPagina, setItemsPorPagina] = useState(10);
 
     const cargarPeriodos = async () => {
         try {
@@ -33,6 +36,25 @@ const Periodos = () => {
     useEffect(()=> {
         cargarPeriodos();
     }, []);
+
+    const periodosPaginados = useMemo(() => {
+        const inicio = (paginaActual - 1) * itemsPorPagina;
+        const fin = inicio + itemsPorPagina;
+        return periodos.slice(inicio, fin);
+    }, [periodos, paginaActual, itemsPorPagina]);
+
+    const totalPaginas = useMemo(() => {
+        return Math.ceil(periodos.length / itemsPorPagina);
+    }, [periodos, itemsPorPagina]);
+
+    const cambiarPagina = (nuevaPagina) => {
+        setPaginaActual(nuevaPagina);
+    };
+
+    const cambiarItemsPorPagina = (nuevoNumero) => {
+        setItemsPorPagina(nuevoNumero);
+        setPaginaActual(1); // Resetear a la primera página
+    };    
 
     return(
         <div className="flex min-h-screen">
@@ -65,8 +87,8 @@ const Periodos = () => {
                                 <tr>
                                     <td className="px-6 py-4 whitespace-nowrap" colSpan="2" style={{color: 'red'}}> {error} </td>
                                 </tr>
-                            ): periodos.length > 0 ? (
-                                periodos.map((periodo)=>(
+                            ): periodosPaginados.length > 0 ? (
+                                periodosPaginados.map((periodo)=>(
                                     <tr key={periodo.idPeriodo}>
                                         <td className="px-6 py-4 whitespace-nowrap"> {periodo.calificaciones} </td>
                                         <td className="px-6 py-4 whitespace-nowrap"> {periodo.asistencia} </td>
@@ -92,6 +114,15 @@ const Periodos = () => {
                             )}
                         </tbody>
                     </table>
+
+                    <Paginacion 
+                        paginaActual={paginaActual}
+                        totalPaginas={totalPaginas}
+                        cambiarPagina={cambiarPagina}
+                        itemsPorPagina={itemsPorPagina}
+                        cambiarItemsPorPagina={cambiarItemsPorPagina}
+                    /> 
+
                 </div>
             </div>
 

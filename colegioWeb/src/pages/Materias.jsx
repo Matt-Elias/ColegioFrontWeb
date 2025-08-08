@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import ModalAgregarMateria from "../components/Materia/ModalAgregarMateria";
 import ModalModificarMateria from "../components/Materia/ModalModificarMateria";
 import Sidebar from "../components/Sidebar";
 import { consultarMaterias } from "../services/materias";
 import { consultarUsuarios } from "../services/usuarios";
+import { Paginacion } from "../components/Paginacion";
 
 const Materias = () => {
     const [materias, setMaterias] = useState([]);
@@ -16,6 +17,8 @@ const Materias = () => {
     const [loadingProfesores, setLoadingProfesores] = useState(true);
 
     const [error, setError] = useState();
+    const [paginaActual, setPaginaActual] = useState(1);
+    const [itemsPorPagina, setItemsPorPagina] = useState(10);
 
     const cargarMaterias = async () => {
         try {
@@ -71,7 +74,26 @@ const Materias = () => {
         cargarMaterias();
         cargarProfesores();
     }, []);
+    
+    const materiaPaginado = useMemo(() => {
+        const inicio = (paginaActual - 1) * itemsPorPagina;
+        const fin = inicio + itemsPorPagina;
+        return materias.slice(inicio, fin);
+    }, [materias, paginaActual, itemsPorPagina]);
 
+    const totalPaginas = useMemo(() => {
+        return Math.ceil(materias.length / itemsPorPagina);
+    }, [materias, itemsPorPagina]);
+
+    const cambiarPagina = (nuevaPagina) => {
+        setPaginaActual(nuevaPagina);
+    };
+
+    const cambiarItemsPorPagina = (nuevoNumero) => {
+        setItemsPorPagina(nuevoNumero);
+        setPaginaActual(1); // Resetear a la primera página
+    };
+    
     return(
         <div className="flex min-h-screen"> 
             <Sidebar />
@@ -99,8 +121,8 @@ const Materias = () => {
                                 <tr>
                                     <td className="px-6 py-4 whitespace-nowrap" colSpan="2" style={{color: 'red'}}> {error} </td>
                                 </tr>
-                            ) : materias.length > 0 ? (
-                                materias.map((materia) => (
+                            ) : materiaPaginado.length > 0 ? (
+                                materiaPaginado.map((materia) => (
                                     <tr key={materia.idMateria}>
                                         <td className="px-6 py-4 whitespace-nowrap"> {materia.nombreMateria } </td>
                                         <td className="px-6 py-4 whitespace-nowrap"> {materia.profesor ? obtenerNombreProfesor(materia.profesor.idProfesor) : 'Sin asignar'} </td>
@@ -124,6 +146,15 @@ const Materias = () => {
 
                         </tbody>
                     </table>
+
+                    <Paginacion 
+                        paginaActual={paginaActual}
+                        totalPaginas={totalPaginas}
+                        cambiarPagina={cambiarPagina}
+                        itemsPorPagina={itemsPorPagina}
+                        cambiarItemsPorPagina={cambiarItemsPorPagina}
+                    />                   
+
                 </div>
             </div>
 
