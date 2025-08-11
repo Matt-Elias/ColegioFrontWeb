@@ -6,8 +6,6 @@ import ColegioFondo from "../../img/ColegioFondo.png";
 import LogoUsuario from "../../img/LogoUsuario2.png";
 import {consultarGrados} from "../../services/grados";
 
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import CodigoPdf from "../pdf/CodigoPdf";
 import QRGenerator from "../CodigoQR/QRGenerator";
 
 function ModalVerUEstudiante ({usuario, cerrar}) {
@@ -57,6 +55,22 @@ function ModalVerUEstudiante ({usuario, cerrar}) {
 
         cargarGradosGrupos();
     }, [usuario]);
+
+    const manejarDescargaPNG = async () => {
+        try {
+            if (!qrRef.current || !qrRef.current.getQRAsImage) return;
+            const imageData = await qrRef.current.getQRAsImage();
+            if (!imageData) return;
+            const link = document.createElement('a');
+            link.href = imageData;
+            link.download = `qr_${matricula || 'codigo'}.png`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            console.error('Error al generar/descargar QR:', error);
+        }
+    }
 
     const estudianteData = {
         nombreCompleto: nombreCompleto,
@@ -174,24 +188,21 @@ function ModalVerUEstudiante ({usuario, cerrar}) {
                             <div>
                                 <QRGenerator ref={qrRef} estudianteData={estudianteData} />
 
-                                <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal">Codigo QR</label>
+                                <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal">
+                                Código QR
+                                </label>  
+
                                 <div className="mb-5 mt-2 flex items-center space-x-4">
-                                
-                                    {/* Botón para descargar PDF */}
-                                    {isClient && qrImage && (
-                                        <PDFDownloadLink 
-                                            document={<CodigoPdf estudianteData={estudianteData} qrImage={qrImage} />} 
-                                            fileName={`credencial_${matricula}.pdf`}
+                                    {isClient && (
+                                        <button
+                                        onClick={manejarDescargaPNG}
+                                        className="flex items-center justify-center w-full h-10 px-3 transition bg-white border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none"
                                         >
-                                            {({ loading }) => (
-                                            <button className="flex items-center justify-center w-full h-10 px-3 transition bg-white border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none">
-                                                <IoMdDownload className="w-6 h-6 text-gray-500"/>
-                                                <span className={`text-gray-500 text-sm font-bold leading-tight tracking-normal`}>
-                                                {loading ? 'Generando PDF...' : 'Descargar Credencial'}
-                                                </span>
-                                            </button>
-                                            )}
-                                        </PDFDownloadLink>
+                                        <IoMdDownload className="w-6 h-6 text-gray-500" />
+                                        <span className="text-gray-500 text-sm font-bold leading-tight tracking-normal">
+                                            Descargar QR (PNG)
+                                        </span>
+                                        </button>
                                     )}
                                 </div>
                             </div>
