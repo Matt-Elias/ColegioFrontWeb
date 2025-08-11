@@ -17,6 +17,7 @@ function ModalAgregarMateria ({cerrar, recargar}) {
     const [valorSeleccionado, setValorSeleccionado] = useState("");
     const [buscarTermino, setBuscarTermino] = useState("");
     const selectRef = useRef(null);
+    const [error, setError] = useState({});
 
     useEffect(()=>{
         const cargarUsuarioProfesor = async () => {
@@ -61,12 +62,13 @@ function ModalAgregarMateria ({cerrar, recargar}) {
     }, [profesores, buscarTermino]);
         
     const manejarOpcionClick = (opcion) => {
-        if (!opcion) return;
-
+        //if (!opcion) return;
         setValorSeleccionado(`${opcion.nombreCompleto}`);
         setBuscarTermino(`${opcion.nombreCompleto}`);
         setIdProfesor(opcion.idUsuario);
         setEstaAbierto(false);
+
+        setError(prev => ({ ...prev, idProfesor: undefined }));
     }
     
     const limpiarSeleccion = () => {
@@ -81,6 +83,25 @@ function ModalAgregarMateria ({cerrar, recargar}) {
     }
 
     const guardar = async () => {
+        let newErrors = {};
+
+        if (nombreMateria.trim() === "") {
+            newErrors.nombreMateria = "El nombre de la materia es obligatorio ";
+        }
+
+        if (asignaciones.trim() === "") {
+            newErrors.asignaciones = "La asignacion es obligatoria";
+        }
+
+        if (idProfesor === "") {
+            newErrors.idProfesor = "Falta seleccionar una opción";
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setError(newErrors);
+            return;
+        }
+
         try {
             const materiaData = {
                 nombreMateria: nombreMateria,
@@ -90,6 +111,7 @@ function ModalAgregarMateria ({cerrar, recargar}) {
                 }
             }
 
+            setError({});
             await crearMateria(materiaData);
             cerrar();
             recargar();
@@ -111,17 +133,23 @@ function ModalAgregarMateria ({cerrar, recargar}) {
                     
                     <h3 className="text-gray-600 font-lg font-bold tracking-normal leading-tight mb-4"> Agregar materia</h3>
                     
-                    <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Nombre de la materia</label>
-                    <input className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Nombre de la materia" value={nombreMateria} onChange={(e) => setNombreMateria(e.target.value)} />
-
-                    <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Asignaciones</label>
-                    <input className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Asignaciones" value={asignaciones} onChange={(e) => setAsignaciones(e.target.value)} />
+                    <div>
+                        <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Nombre de la materia</label>
+                        <input className= {`mb-2 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${ error.nombreMateria ? "border-red-500" : "border-gray-300" }`} placeholder="Nombre de la materia" value={nombreMateria} onChange={(e) => { setNombreMateria(e.target.value); if (e.target.value.trim() !== "") { setError(prev => ({ ...prev, nombreMateria: undefined })); }  } } />
+                        <p className="text-red-500 text-xs mb-4">{error.nombreMateria}</p>
+                    </div>
 
                     <div>
-                        <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Selecciona un grupo</label>
+                        <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Asignaciones</label>
+                        <input className= {`mb-2 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${ error.asignaciones ? "border-red-500" : "border-gray-300" }`} placeholder="Asignaciones" value={asignaciones} onChange={(e) => { setAsignaciones(e.target.value); if (e.target.value.trim() !== "") { setError(prev => ({ ...prev, asignaciones: undefined })); }  } } />
+                        <p className="text-red-500 text-xs mb-4">{error.asignaciones}</p>
+                    </div>
+
+                    <div>
+                        <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Selecciona un profesor</label>
                                 
                         <div className="relative mb-5 mt-2" ref={selectRef}>
-                            <div className="h-10 bg-white flex items-center border border-gray-300 rounded w-full pl-3 pr-2 text-sm text-gray-600 focus-within:border-sky-300">
+                            <div className= {`mb-2 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${ error.idProfesor ? "border-red-500" : "border-gray-300" }`} >
                                 <input type="text" value={buscarTermino}
                                     onChange={(e) => {
                                         setBuscarTermino(e.target.value);
@@ -174,6 +202,8 @@ function ModalAgregarMateria ({cerrar, recargar}) {
                                 </div>
                             )}
                         </div>
+
+                        {error.idProfesor && ( <p className="text-red-500 text-xs mb-4">{error.idProfesor}</p> )}
                     </div>
 
                     <button className="ml-0 rounded-md bg-green-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-300"

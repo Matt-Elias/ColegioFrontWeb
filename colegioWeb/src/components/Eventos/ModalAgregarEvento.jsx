@@ -27,10 +27,38 @@ function ModalAgregarEvento ({cerrar, recargar}) {
     const [fechaSeleccionada, setFechaSeleccionada] = useState(dayjs());
     const [horaInicio, setHoraInicio] = useState(dayjs().hour(9).minute(0)); // 9:00 AM por defecto
     const [horaFin, setHoraFin] = useState(dayjs().hour(10).minute(0)); // 10:00 AM por defecto
-
+    
     const [value, setValue] = React.useState(dayjs('2025-06-01'));
-
+    const [error, setError] = useState({});
+    
     const guardar = async () => {
+        let newErrors = {};
+
+        if (!titulo.trim()) {
+            newErrors.titulo = "El título es obligatorio";
+        }
+
+        if (!fechaSeleccionada) {
+            newErrors.fechaSeleccionada = "La fecha es obligatoria";
+        }
+
+        if (!horaInicio) {
+            newErrors.horaInicio = "La hora de inicio es obligatoria";
+        }
+
+         if (!horaFin) {
+            newErrors.horaFin = "La hora de fin es obligatoria";
+        }
+
+        if (horaInicio && horaFin && horaFin.isBefore(horaInicio)) {
+            newErrors.horaFin = "La hora de fin no puede ser anterior a la de inicio";
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setError(newErrors);
+            return;
+        }
+
         try {
             const fechaInicio = dayjs(fechaSeleccionada)
                 .hour(horaInicio.hour())
@@ -66,6 +94,7 @@ function ModalAgregarEvento ({cerrar, recargar}) {
                 fechaFin: fechaFin.toISOString()
             });
 
+            setError({});
             recargar();
             cerrar();
         } catch (error) {
@@ -94,52 +123,61 @@ function ModalAgregarEvento ({cerrar, recargar}) {
                                 <DatePicker
                                 label="Seleccionar Fecha"
                                 value={fechaSeleccionada}
-                                onChange={(newValue) => setFechaSeleccionada(newValue)}
-                                slotProps={{textField: {
-                                    variant: "outlined", 
-                                    size: "small", 
-                                    fullWidth: true, 
-                                    sx: {
-                                        fontSize: '0.875rem', // 14px
-                                        '& .MuiOutlinedInput-root': {
-                                            borderRadius: '8px',
-                                        },
-                                        '& .MuiInputLabel-root': {
-                                            fontWeight: 500,
-                                            color: '#6B7280', // gray-500 de Tailwind
-                                        },
-                                    } 
-                                }}}
+                                onChange={(newValue) => { setFechaSeleccionada(newValue); if (newValue) setError(prev => ({ ...prev, fechaSeleccionada: undefined }));  } }
+                                slotProps={{
+                                    textField: {
+                                        variant: "outlined", 
+                                        size: "small", 
+                                        fullWidth: true, 
+                                        error: !!error.fechaSeleccionada,
+                                        sx: {
+                                            fontSize: '0.875rem', // 14px
+                                            '& .MuiOutlinedInput-root': {
+                                                borderRadius: '8px',
+                                            },
+                                            
+                                        } 
+                                    }
+                                }}
                                 />
+                                {error.fechaSeleccionada && (
+                                    <p className="text-red-500 text-xs mt-1">{error.fechaSeleccionada}</p>
+                                )}
 
                                 <DemoItem label="Hora Inicio">
                                     <MobileTimePicker 
                                         value={horaInicio}
-                                        onChange={(newValue) => setHoraInicio(newValue)}
+                                        onChange={(newValue) => { 
+                                            setHoraInicio(newValue); 
+                                            if (newValue) setError(prev => ({ ...prev, horaInicio: undefined }));
+                                        }}
                                         slotProps={{
                                             textField: {
                                                 variant: "outlined", 
                                                 size: "small", 
                                                 fullWidth: true, 
+                                                error: !!error.horaInicio,
                                                 sx: {
                                                     fontSize: '0.875rem',
-                                                    '& .MuiOutlinedInput-root': { borderRadius: '8px' },
-                                                    '& .MuiInputLabel-root': {
-                                                        fontWeight: 500,
-                                                        color: '#6B7280',
-                                                    },
-                                                } 
+                                                    '& .MuiOutlinedInput-root': { borderRadius: '8px' }
+                                                }
                                             }
-                                        }}  
+                                        }}
                                     />
+                                    {error.horaInicio && (
+                                        <p className="text-red-500 text-xs mt-1">{error.horaInicio}</p>
+                                    )}
+
                                 </DemoItem>
 
                                 <DemoItem label="Hora de fin">
                                     <MobileTimePicker 
                                         value={horaFin}
-                                        onChange={(newValue) => setHoraFin(newValue)}
+                                        onChange={(newValue) => { setHoraFin(newValue); if (newValue) setError(prev => ({ ...prev, horaFin: undefined }));  } }
                                         slotProps={{
                                             textField: {
+                                                error: !!error.horaFin,
+                                                helperText: error.horaFin,
                                                 variant: "outlined", 
                                                 size: "small", 
                                                 fullWidth: true, 

@@ -17,6 +17,7 @@ function ModalModificarMateria ({materia, cerrar, recargar}) {
     const [valorSeleccionado, setValorSeleccionado] = useState("");
     const [buscarTermino, setBuscarTermino] = useState("");
     const selectRef = useRef(null);  
+    const [error, setError] = useState({});
     
     useEffect(()=>{
         const cargarUsuarioProfesor = async () => {
@@ -77,12 +78,13 @@ function ModalModificarMateria ({materia, cerrar, recargar}) {
     }, [profesores, buscarTermino]);
 
     const manejarOpcionClick = (opcion) => {
-        if (!opcion) return;
-
+        //if (!opcion) return;
         setValorSeleccionado(`${opcion.nombreCompleto}`);
         setBuscarTermino(`${opcion.nombreCompleto}`);
         setIdProfesor(opcion.idUsuario);
         setEstaAbierto(false);
+
+        setError(prev => ({ ...prev, idProfesor: undefined }));
     }
 
     const limpiarSeleccion = () => {
@@ -97,6 +99,25 @@ function ModalModificarMateria ({materia, cerrar, recargar}) {
     }
 
     const guardar = async () => {
+        let newErrors = {};
+
+        if (nombreMateria.trim() === "") {
+            newErrors.nombreMateria = "El nombre de la materia es obligatorio ";
+        }
+
+        if (asignaciones.trim() === "") {
+            newErrors.asignaciones = "La asignacion es obligatoria";
+        }
+
+        if (idProfesor === "") {
+            newErrors.idProfesor = "Falta seleccionar una opción";
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setError(newErrors);
+            return;
+        }
+
         try {
             const materiaData = {
                 idMateria: materia.idMateria,
@@ -107,6 +128,7 @@ function ModalModificarMateria ({materia, cerrar, recargar}) {
                 }
             }
 
+            setError({});
             await modificarMateria(materiaData);
             cerrar();
             recargar();
@@ -127,70 +149,78 @@ function ModalModificarMateria ({materia, cerrar, recargar}) {
                     <div className="relative py-8 px-5 md:px-10 bg-white shadow-md rounded border border-gray-400">
                         <h3 className="text-gray-600 font-lg font-bold tracking-normal leading-tight mb-4"> Modificar materia</h3>
 
-                        <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Nombre de la materia</label>
-                        <input className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Nombre de la materia" value={nombreMateria} onChange={(e) => setNombreMateria(e.target.value)} />
-
-                        <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Asignaciones</label>
-                        <input className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Asignaciones" value={asignaciones} onChange={(e) => setAsignaciones(e.target.value)} />
+                        <div>
+                            <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Nombre de la materia</label>
+                            <input className= {`mb-2 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${ error.nombreMateria ? "border-red-500" : "border-gray-300" }`} placeholder="Nombre de la materia" value={nombreMateria} onChange={(e) => { setNombreMateria(e.target.value); if (e.target.value.trim() !== "") { setError(prev => ({ ...prev, nombreMateria: undefined })); }  } } />
+                            <p className="text-red-500 text-xs mb-4">{error.nombreMateria}</p>
+                        </div>
 
                         <div>
-                            <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Selecciona un grupo</label>
-                                    
-                            <div className="relative mb-5 mt-2" ref={selectRef}>
-                                <div className="h-10 bg-white flex items-center border border-gray-300 rounded w-full pl-3 pr-2 text-sm text-gray-600 focus-within:border-sky-300">
-                                    <input type="text" value={buscarTermino}
-                                        onChange={(e) => {
-                                            setBuscarTermino(e.target.value);
-                                            setEstaAbierto(true);
-                                        }}
+                            <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Asignaciones</label>
+                            <input className= {`mb-2 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${ error.asignaciones ? "border-red-500" : "border-gray-300" }`} placeholder="Asignaciones" value={asignaciones} onChange={(e) => { setAsignaciones(e.target.value); if (e.target.value.trim() !== "") { setError(prev => ({ ...prev, asignaciones: undefined })); }  } } />
+                            <p className="text-red-500 text-xs mb-4">{error.asignaciones}</p>
+                        </div>
+
+                        <div>
+                        <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Selecciona un profesor</label>
+                                
+                        <div className="relative mb-5 mt-2" ref={selectRef}>
+                            <div className= {`mb-2 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${ error.idProfesor ? "border-red-500" : "border-gray-300" }`} >
+                                <input type="text" value={buscarTermino}
+                                    onChange={(e) => {
+                                        setBuscarTermino(e.target.value);
+                                        setEstaAbierto(true);
+                                    }}
                                     placeholder={loadingProfesores ? "Cargando opciones": "Buscar profesor"}
                                     className="flex-grow outline-none text-gray-600"
                                     onFocus={() => setEstaAbierto(true)} 
                                     disabled={loadingProfesores}
                                     />
-                    
-                                    {buscarTermino && (
-                                        <button className="ml-2 text-gray-400 hover:text-gray-600 focus:outline-none" onClick={limpiarSeleccion}>
-                                            <TiDeleteOutline className="w-5 h-5 text-red-400" />
-                                        </button>
-                                    )}
-                    
-                                    <button className="ml-2 text-gray-400 hover:text-gray-600 focus:outline-none" onClick={desplegable} disabled={loadingProfesores}>
-                                        {estaAbierto ? (
-                                            <IoIosArrowUp className="w-4 h-4 text-gray-700" />
-                                        ): (
-                                            <IoIosArrowDown className="w-4 h-4 text-gray-700" />
-                                        )}
+                
+                                {buscarTermino && (
+                                    <button className="ml-2 text-gray-400 hover:text-gray-600 focus:outline-none" onClick={limpiarSeleccion}>
+                                        <TiDeleteOutline className="w-5 h-5 text-red-400" />
                                     </button>
-                                </div>
-                    
-                                {estaAbierto && !loadingProfesores && (
-                                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto">
-                                        {filtrarOpciones.length > 0 ? (
-                                            <div className="py-1">
-                                                {filtrarOpciones.map((opcion, index)=> {
-                                                    if (!opcion) return null;
-
-                                                    return(
-                                                        <div key={opcion.idUsuario || index} onClick={()=> manejarOpcionClick(opcion)} 
-                                                            className={`cursor-pointer px-3 py-2 text-sm text-gray-600 hover:bg-blue-600 hover:text-white ${
-                                                                valorSeleccionado === opcion.nombreCompleto ? 'bg-gray-100 font-medium' : ''
-                                                            }`} > {opcion.nombreCompleto}
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        ) : (
-                                            <div className="px-3 py-2 text-sm text-gray-500">
-                                                {profesores.length === 0 ? 
-                                                    "No hay grupos disponibles" : 
-                                                    "No se encontraron resultados"}
-                                            </div>
-                                        )}
-                                    </div>
                                 )}
+                
+                                <button className="ml-2 text-gray-400 hover:text-gray-600 focus:outline-none" onClick={desplegable} disabled={loadingProfesores}>
+                                    {estaAbierto ? (
+                                        <IoIosArrowUp className="w-4 h-4 text-gray-700" />
+                                    ): (
+                                        <IoIosArrowDown className="w-4 h-4 text-gray-700" />
+                                    )}
+                                </button>
                             </div>
+                
+                            {estaAbierto && !loadingProfesores && (
+                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto">
+                                    {filtrarOpciones.length > 0 ? (
+                                        <div className="py-1">
+                                            {filtrarOpciones.map((opcion, index)=> {
+                                                if (!opcion) return null;
+
+                                                return(
+                                                    <div key={opcion.idUsuario || index} onClick={()=> manejarOpcionClick(opcion)} 
+                                                        className={`cursor-pointer px-3 py-2 text-sm text-gray-600 hover:bg-blue-600 hover:text-white ${
+                                                            valorSeleccionado === opcion.nombreCompleto ? 'bg-gray-100 font-medium' : ''
+                                                        }`} > {opcion.nombreCompleto}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <div className="px-3 py-2 text-sm text-gray-500">
+                                            {profesores.length === 0 ? 
+                                                "No hay grupos disponibles" : 
+                                                "No se encontraron resultados"}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
+
+                        {error.idProfesor && ( <p className="text-red-500 text-xs mb-4">{error.idProfesor}</p> )}
+                    </div>
 
                         <button className="ml-0 rounded-md bg-green-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-300"
                             onClick={guardar}> Guardar 

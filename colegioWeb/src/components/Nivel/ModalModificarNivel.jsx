@@ -3,6 +3,7 @@ import { modificarNivel } from "../../services/niveles";
 
 function ModalModificarNivel ({nivel, cerrar, recargar}) {
     const [nombreNivel, setNombreNivel] = useState("");
+    const [error, setError] = useState("");
 
     useEffect(() => {
         // Verificar si nivel existe antes de acceder a sus propiedades
@@ -15,6 +16,12 @@ function ModalModificarNivel ({nivel, cerrar, recargar}) {
         // Verificar nuevamente antes de guardar
         if (!nivel) return;
 
+        if (nombreNivel.trim() === "") {
+            setError("El nombre del nivel es obligatorio");
+            return; // Detener ejecución
+        }
+
+        setError("");
         await modificarNivel({ 
             idNivel: nivel.idNivel, 
             nivelAcademico: nombreNivel
@@ -33,17 +40,22 @@ function ModalModificarNivel ({nivel, cerrar, recargar}) {
             <div className="container mx-auto w-11/12 md:w-2/3 max-w-lg">
                 <div className="relative py-8 px-5 md:px-10 bg-white shadow-md rounded border border-gray-400">
 
-                    <h3 className="text-gray-600 font-lg font-bold tracking-normal leading-tight mb-4">Editar Nivel</h3>
+                <h3 className="text-gray-600 font-lg font-bold tracking-normal leading-tight mb-4">Editar Nivel</h3>
+                
+                <div className="mb-4">
                     <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal">Nivel academico</label>
-                    <input className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Nivel academico" value={nombreNivel} onChange={(e) => setNombreNivel(e.target.value)} />
-                    
-                    <button className="ml-0 rounded-md bg-green-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-300"  
-                        onClick={guardar}> Guardar 
-                    </button>
+                    <input className= {`mb-2 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${ error ? "border-red-500" : "border-gray-300" }`} placeholder="Nivel academico" value={nombreNivel} onChange={(e) => setNombreNivel(e.target.value)} />
+                            
+                    {error && <p className="text-red-500 text-xs mb-4 font-medium">{error}</p>}
+                </div>
 
-                    <button className="ml-6 rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-300" 
-                        onClick={cancelar}> Cancelar 
-                    </button>
+                <button className="ml-0 rounded-md bg-green-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-300"  
+                    onClick={guardar}> Guardar 
+                </button>
+
+                <button className="ml-6 rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-300" 
+                    onClick={cancelar}> Cancelar 
+                </button>
 
                 </div>
             </div>

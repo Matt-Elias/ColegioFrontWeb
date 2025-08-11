@@ -12,6 +12,7 @@ function ModalModificarEvento ({evento, cerrar, recargar}) {
     const [descripcion, setDescripcion] = useState(evento?.descripcion || "");
     const [colorEtiqueta, setColorEtiqueta] = useState(evento?.color || "#3b82f6");
     const [idUsuario, setIdUsuario] = useState(1);
+    const [error, setError] = useState({});
 
     // Convierte las fechas del evento a dayjs con la zona horaria correcta
     const [fechaSeleccionada, setFechaSeleccionada] = useState(
@@ -26,6 +27,33 @@ function ModalModificarEvento ({evento, cerrar, recargar}) {
         evento?.end ? dayjs(evento.end).tz("America/Mexico_City") : dayjs().hour(10).minute(0)
     );
     const guardar = async () => {
+        let newErrors = {};
+
+        if (!titulo.trim()) {
+            newErrors.titulo = "El título es obligatorio";
+        }
+
+        if (!fechaSeleccionada) {
+            newErrors.fechaSeleccionada = "La fecha es obligatoria";
+        }
+
+        if (!horaInicio) {
+            newErrors.horaInicio = "La hora de inicio es obligatoria";
+        }
+
+         if (!horaFin) {
+            newErrors.horaFin = "La hora de fin es obligatoria";
+        }
+
+        if (horaInicio && horaFin && horaFin.isBefore(horaInicio)) {
+            newErrors.horaFin = "La hora de fin no puede ser anterior a la de inicio";
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setError(newErrors);
+            return;
+        }
+
         try {
             const fechaInicio = dayjs(fechaSeleccionada)
                 .hour(horaInicio.hour())
@@ -85,8 +113,10 @@ function ModalModificarEvento ({evento, cerrar, recargar}) {
                                 <DatePicker
                                 label="Seleccionar Fecha"
                                 value={fechaSeleccionada}
-                                onChange={(newValue) => setFechaSeleccionada(newValue)}
+                                onChange={(newValue) => { setFechaSeleccionada(newValue); if (newValue) setError(prev => ({ ...prev, fechaSeleccionada: undefined }));  } }
                                 slotProps={{textField: {
+                                    error: !!error.fechaSeleccionada,
+                                    helperText: error.fechaSeleccionada,
                                     variant: "outlined", 
                                     size: "small", 
                                     fullWidth: true, 
@@ -106,9 +136,11 @@ function ModalModificarEvento ({evento, cerrar, recargar}) {
                                 <DemoItem label="Hora Inicio">
                                     <MobileTimePicker 
                                         value={horaInicio}
-                                        onChange={(newValue) => setHoraInicio(newValue)}
+                                        onChange={(newValue) => { setHoraInicio(newValue); if (newValue) setError(prev => ({ ...prev, horaInicio: undefined }));  } }
                                         slotProps={{
                                             textField: {
+                                                error: !!error.horaInicio,
+                                                helperText: error.horaInicio,
                                                 variant: "outlined", 
                                                 size: "small", 
                                                 fullWidth: true, 
@@ -128,9 +160,11 @@ function ModalModificarEvento ({evento, cerrar, recargar}) {
                                 <DemoItem label="Hora de fin">
                                     <MobileTimePicker 
                                         value={horaFin}
-                                        onChange={(newValue) => setHoraFin(newValue)}
+                                        onChange={(newValue) => { setHoraFin(newValue); if (newValue) setError(prev => ({ ...prev, horaFin: undefined }));  } }
                                         slotProps={{
                                             textField: {
+                                                error: !!error.horaFin,
+                                                helperText: error.horaFin,
                                                 variant: "outlined", 
                                                 size: "small", 
                                                 fullWidth: true, 

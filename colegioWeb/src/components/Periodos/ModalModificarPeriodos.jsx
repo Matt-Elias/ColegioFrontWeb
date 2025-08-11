@@ -12,6 +12,8 @@ function ModalModificarPeriodos ({periodo, cerrar, recargar}) {
     const [niveles, setNiveles] = useState([]);
     const [idNivel, setIdNivel] = useState("");
     const [loadingNiveles, setLoadingNiveles] = useState(true);
+    const [error, setError] = useState({});
+    
 
     // Cargar niveles al iniciar
     useEffect(() => {
@@ -47,6 +49,38 @@ function ModalModificarPeriodos ({periodo, cerrar, recargar}) {
     }, [periodo]);
 
     const guardar = async () => {
+        let newErrors = {};
+
+        if (calificaciones.trim() === "") {
+            newErrors.calificaciones = "Falta llenar este campo";
+        }
+
+        if (asistencia.trim() === "") {
+            newErrors.asistencia = "Falta llenar este campo";
+        }
+
+        if (tareas.trim() === "") {
+            newErrors.tareas = "Falta llenar este campo";
+        }
+
+        if (proyectos.trim() === "") {
+            newErrors.proyectos = "Falta llenar este campo";
+        }
+
+        if (tipoPeriodo.trim() === "") {
+            newErrors.tipoPeriodo = "Falta llenar este campo";
+        }
+
+        if (idNivel === "") {
+            newErrors.idNivel = "Falta seleccionar una opción";
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setError(newErrors);
+            return;
+        }
+
+        setError({});
         await modificarPeriodo({ 
             idPeriodo: periodo.idPeriodo, 
             calificaciones: calificaciones, 
@@ -74,27 +108,32 @@ function ModalModificarPeriodos ({periodo, cerrar, recargar}) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Calificaciones</label>
-                            <input className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Calificaciones" value={calificaciones} onChange={(e) => setCalificaciones(e.target.value)} />
+                            <input className= {`mb-2 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${ error.calificaciones ? "border-red-500" : "border-gray-300" }`} placeholder="Calificaciones" value={calificaciones} onChange={(e) => { setCalificaciones(e.target.value); if (e.target.value.trim() !== "") { setError(prev => ({ ...prev, calificaciones: undefined })); }  } } />
+                            <p className="text-red-500 text-xs mb-4">{error.calificaciones}</p>
                         </div>
 
                         <div>
                             <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Asistencia</label>
-                            <input className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Asistencia" value={asistencia} onChange={(e) => setAsistencia(e.target.value)} />
+                            <input className= {`mb-2 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${ error.asistencia ? "border-red-500" : "border-gray-300" }`} placeholder="Asistencia" value={asistencia} onChange={(e) => { setAsistencia(e.target.value); if (e.target.value.trim() !== "") { setError(prev => ({ ...prev, asistencia: undefined })); }  } } />
+                            <p className="text-red-500 text-xs mb-4">{error.asistencia}</p>
                         </div>
 
                         <div>
                             <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Tareas</label>
-                            <input className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Tareas" value={tareas} onChange={(e) => setTareas(e.target.value)} />
+                            <input className= {`mb-2 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${ error.tareas ? "border-red-500" : "border-gray-300" }`} placeholder="Tareas" value={tareas} onChange={(e) => { setTareas(e.target.value); if (e.target.value.trim() !== "") { setError(prev => ({ ...prev, tareas: undefined })); }  } } />
+                            <p className="text-red-500 text-xs mb-4">{error.tareas}</p>
                         </div>
                         
                         <div>
                             <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Proyectos</label>
-                            <input className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Proyectos" value={proyectos} onChange={(e) => setProyectos(e.target.value)} />
+                            <input className= {`mb-2 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${ error.proyectos ? "border-red-500" : "border-gray-300" }`} placeholder="Proyectos" value={proyectos} onChange={(e) => { setProyectos(e.target.value); if (e.target.value.trim() !== "") { setError(prev => ({ ...prev, proyectos: undefined })); }  } } />
+                            <p className="text-red-500 text-xs mb-4">{error.proyectos}</p>
                         </div>
 
                         <div>
                             <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Tipo de periodo</label>
-                            <input className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Tipo de periodo" value={tipoPeriodo} onChange={(e) => setTipoPeriodo(e.target.value)} />
+                            <input className= {`mb-2 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${ error.tipoPeriodo ? "border-red-500" : "border-gray-300" }`} placeholder="Tipo de periodo" value={tipoPeriodo} onChange={(e) => { setTipoPeriodo(e.target.value); if (e.target.value.trim() !== "") { setError(prev => ({ ...prev, tipoPeriodo: undefined })); }  } } />
+                            <p className="text-red-500 text-xs mb-4">{error.tipoPeriodo}</p>
                         </div>
 
                         <div>
@@ -102,9 +141,9 @@ function ModalModificarPeriodos ({periodo, cerrar, recargar}) {
                             {loadingNiveles ? (
                                 <p>Cargando niveles...</p>
                             ): (
-                                <select className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 pr-8 text-sm border-gray-300 rounded border"
+                                <select className={`mb-1 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 pr-8 text-sm rounded border ${ error.idNivel ? "border-red-500" : "border-gray-300" }`}
                                     value={idNivel}
-                                    onChange={(e)=> setIdNivel(e.target.value)}
+                                    onChange={(e)=> {setIdNivel(e.target.value); if (e.target.value !== "") { setError(prev => ({ ...prev, idNivel: undefined })); }  } }
                                 >
                                 
                                 <option value=""> Seleccione un nivel</option>
@@ -117,6 +156,8 @@ function ModalModificarPeriodos ({periodo, cerrar, recargar}) {
                                 )}
                                 </select>
                             )}
+
+                            {error.idNivel && ( <p className="text-red-500 text-xs mb-4">{error.idNivel}</p> )}
                             
                         </div>   
                     </div>

@@ -35,6 +35,7 @@ function ModalModificarUEstudiante ({usuario, cerrar, recargar}) {
     const selectRef = useRef(null);
 
     const [esVisible, setEsVisible] = useState(false);
+    const [error, setError] = useState("");
     const toogleVisibilidad = () => setEsVisible((prev) => !prev);
 
     useEffect(()=>{
@@ -93,16 +94,20 @@ function ModalModificarUEstudiante ({usuario, cerrar, recargar}) {
     }, [gradosGrupos, buscarTermino]);
         
     const manejarOpcionClick = (opcion) => {
-        if (!opcion || !opcion.gradoGrupo) return;
+        //if (!opcion || !opcion.gradoGrupo) return;
         setValorSeleccionado(opcion.gradoGrupo);
+        setIdGradoGrupo(opcion.idGradoGrupo);
         setBuscarTermino(opcion.gradoGrupo);
-        setIdGradoGrupo(opcion.idGradoGrupo || "");
+        //setIdGradoGrupo(opcion.idGradoGrupo || "");
         setEstaAbierto(false);
+
+        setError(prev => ({ ...prev, idGradoGrupo: undefined }));
     }
     
     const limpiarSeleccion = () => {
         setValorSeleccionado('');
         setBuscarTermino('');
+        setIdGradoGrupo("");
         setEstaAbierto(false);
     }
     
@@ -122,6 +127,40 @@ function ModalModificarUEstudiante ({usuario, cerrar, recargar}) {
             document.removeEventListener("mousedown", manejarClickFuera);
         };
     }, []);
+
+    const validarCampos = () => {
+        let errores = {};
+
+        if (!nombreCompleto.trim()) {
+            errores.nombreCompleto = "El nombre es obligatorio";
+        }
+
+        if (!correoElectronico.trim()) {
+            errores.correoElectronico = "El correo es obligatorio";
+        } else {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(correoElectronico)) {
+                errores.correoElectronico = "El correo no es válido";
+            }
+        }
+
+        if (!contrasena.trim()) {
+            errores.contrasena = "La contraseña es obligatoria";
+        } else if (contrasena.length < 8) {
+            errores.contrasena = "Debe tener al menos 8 caracteres";
+        }
+
+        if (!matricula.trim()) {
+            errores.matricula = "La matrícula es obligatoria";
+        }
+
+        if (!idGradoGrupo) {
+            errores.idGradoGrupo = "Debes seleccionar un grupo";
+        }
+
+        setError(errores);
+        return Object.keys(errores).length === 0;
+    };
 
     const guardar = async () => {
         try {
@@ -151,16 +190,20 @@ function ModalModificarUEstudiante ({usuario, cerrar, recargar}) {
                     }
                 }                
             };
-    
-                await modificarUsuario(usuarioData);
-                cerrar();
-                recargar();
-            } catch (error) {
-                console.error("Error al modificar el usuario: ", error);
-                alert("Ocurrió un error al modificar. Verifica la consola con más detalles.");
-            } finally {
-                setEstaSubiendo(false);
+            
+            if (!validarCampos()) {
+                return; // No guardar si hay errores
             }
+
+            await modificarUsuario(usuarioData);
+            cerrar();
+            recargar();
+        } catch (error) {
+            console.error("Error al modificar el usuario: ", error);
+            alert("Ocurrió un error al modificar. Verifica la consola con más detalles.");
+        } finally {
+            setEstaSubiendo(false);
+        }
     };
 
     const cancelar = async () =>{
@@ -175,15 +218,16 @@ function ModalModificarUEstudiante ({usuario, cerrar, recargar}) {
                         <h3 className="text-gray-600 font-lg font-bold tracking-normal leading-tight mb-4"> Modificar estudiante </h3>
                     
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                             <div>
                                 <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Nombre completo</label>
-                                <input className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Nombre completo" value={nombreCompleto} onChange={(e) => setNombreCompleto(e.target.value)} />
+                                <input className= {`mb-2 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${ error.nombreCompleto ? "border-red-500" : "border-gray-300" }`} placeholder="Nombre completo" value={nombreCompleto} onChange={(e) => { setNombreCompleto(e.target.value); if (e.target.value.trim() !== "") { setError(prev => ({ ...prev, nombreCompleto: undefined })); }  } } />
+                                <p className="text-red-500 text-xs mb-4">{error.nombreCompleto}</p>
                             </div>
 
                             <div>
                                 <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Correo electronico</label>
-                                <input type="email" className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Correo electronico" value={correoElectronico} onChange={(e) => setCorreoElectronico(e.target.value)} disabled readOnly />
+                                <input type="email" className= {`mb-2 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${ error.correoElectronico ? "border-red-500" : "border-gray-300" }`} placeholder="Correo electronico" value={correoElectronico} onChange={(e) => { setCorreoElectronico(e.target.value); const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; if (e.target.value.trim() !== "" && emailRegex.test(e.target.value)) { setError(prev => ({ ...prev, correoElectronico: undefined })); }  } } />
+                                <p className="text-red-500 text-xs mb-4">{error.correoElectronico}</p>
                             </div>
                             
                             <div>
@@ -191,24 +235,33 @@ function ModalModificarUEstudiante ({usuario, cerrar, recargar}) {
                                 <input className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Tipo de usuario" value="Estudiante" disabled readOnly />
                             </div>
 
-                            <div>
+                            <div className="">
                                 <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Contraseña</label>
                                 <div className="relative">
-                                    <input type={esVisible ? "text": "password"} className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Contraseña" value={contrasena} onChange={(e) => setContrasena(e.target.value)} />
 
-                                    <button type="button" onClick={toogleVisibilidad} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-sky-500 focus:outline-none">
-                                        {esVisible ? (
-                                            <IoMdEyeOff size={20} />
-                                        ): (
-                                            <IoMdEye size={20} />
-                                        )}
-                                    </button>
+                                    <div className="">
+                                        <input type={esVisible ? "text": "password"} className={`mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${error.contrasena ? "border-red-500" : "border-gray-300"}`} placeholder="Contraseña" value={contrasena} onChange={(e) => { setContrasena(e.target.value); if (e.target.value.trim() !== "" && e.target.value.length >= 8) { setError(prev => ({ ...prev, contrasena: undefined })); }  } } />
+
+                                        <button type="button" onClick={toogleVisibilidad} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-sky-500 focus:outline-none">
+                                            {esVisible ? (
+                                                <IoMdEyeOff size={20} />
+                                            ): (
+                                                <IoMdEye size={20} />
+                                            )}
+                                        </button>
+                                    </div>
+
+                                    <div className="mb-2">
+                                        {error.contrasena && ( <p className="mb-0 absolute left-0 -bottom-6 text-red-500 text-xs"> {error.contrasena} </p> )}
+                                    </div> 
+                           
                                 </div>
                             </div>
 
                             <div>
                                 <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Matricula</label>
-                                <input className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Matricula" value={matricula} onChange={(e) => setMatricula(e.target.value)} />
+                                <input className= {`mb-2 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${ error.matricula ? "border-red-500" : "border-gray-300" }`} placeholder="Matricula" value={matricula} onChange={(e) => { setMatricula(e.target.value); if (e.target.value.trim() !== "") { setError(prev => ({ ...prev, matricula: undefined })); }  } } />
+                                <p className="text-red-500 text-xs mb-4">{error.matricula}</p>
                             </div>
 
                             <div>
@@ -223,26 +276,26 @@ function ModalModificarUEstudiante ({usuario, cerrar, recargar}) {
                             <div>
                                 <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Selecciona un grupo</label>
                                 
-                                <div className="relative mb-5 mt-2" ref={selectRef}>
-                                    <div className="h-10 bg-white flex items-center border border-gray-300 rounded w-full pl-3 pr-2 text-sm text-gray-600 focus-within:border-sky-300">
+                                <div className="relative mb-2 mt-2" ref={selectRef}>
+                                    <div className= {`mb-2 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${ error.idGradoGrupo ? "border-red-500" : "border-gray-300" }`} >
                                         <input type="text" value={buscarTermino}
                                             onChange={(e) => {
                                                 setBuscarTermino(e.target.value);
                                                 setEstaAbierto(true);
                                             }}
                                             placeholder={loadingGrados ? "Cargando opciones": "Buscar grupo"}
-                                            className="flex-grow outline-none text-gray-600"
+                                            className= "flex-grow outline-none text-gray-600"
                                             onFocus={() => setEstaAbierto(true)} 
                                             disabled={loadingGrados}
                                             />
                 
                                         {buscarTermino && (
-                                            <button className="ml-2 text-gray-400 hover:text-gray-600 focus:outline-none" onClick={limpiarSeleccion}>
+                                            <button className="ml-2 text-gray-400 hover:text-gray-600 focus:outline-none " onClick={limpiarSeleccion}>
                                                 <TiDeleteOutline className="w-5 h-5 text-red-400" />
                                             </button>
                                         )}
                 
-                                        <button className="ml-2 text-gray-400 hover:text-gray-600 focus:outline-none" onClick={desplegable} disabled={loadingGrados}>
+                                        <button className="ml-2 text-gray-400 hover:text-gray-600 focus:outline-none " onClick={desplegable} disabled={loadingGrados}>
                                             {estaAbierto ? (
                                                 <IoIosArrowUp className="w-4 h-4 text-gray-700" />
                                             ): (
@@ -275,8 +328,13 @@ function ModalModificarUEstudiante ({usuario, cerrar, recargar}) {
                                                 </div>
                                             )}
                                         </div>
+                                        
                                     )}
+
                                 </div>
+
+                                {error.idGradoGrupo && ( <p className="text-red-500 text-xs mb-4">{error.idGradoGrupo}</p> )}
+
                             </div>
 
                             <div>

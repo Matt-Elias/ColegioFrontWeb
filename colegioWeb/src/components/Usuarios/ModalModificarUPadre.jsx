@@ -22,6 +22,7 @@ function ModalModificarUPadre ({usuario, cerrar, recargar}) {
     const selectRef = useRef(null);
 
     const [esVisible, setEsVisible] = useState(false);
+    const [error, setError] = useState("");
     const toogleVisibilidad = () => setEsVisible((prev) => !prev);
 
     useEffect(() => {   
@@ -84,12 +85,15 @@ function ModalModificarUPadre ({usuario, cerrar, recargar}) {
     }, [estudiantes, buscarTermino]);
 
     const manejarOpcionClick = (opcion) => {
-        if (!opcion || !opcion.estudiante) return;
+        //if (!opcion || !opcion.estudiante) return;
 
         setValorSeleccionado(`${opcion.nombreCompleto} - ${opcion.estudiante.matricula}`);
         setBuscarTermino(`${opcion.nombreCompleto} - ${opcion.estudiante.matricula}`);
+        //setIdEstudiante(opcion.estudiante.idEstudiante);
         setIdEstudiante(opcion.estudiante.idEstudiante);
         setEstaAbierto(false);
+
+        setError(prev => ({ ...prev, idEstudiante: undefined }));
     }
     
     const limpiarSeleccion = () => {
@@ -103,6 +107,34 @@ function ModalModificarUPadre ({usuario, cerrar, recargar}) {
         setEstaAbierto(!estaAbierto);
     }
 
+    const validarCampos = () => {
+        let errores = {};
+
+        if (!nombreCompleto.trim()) {
+            errores.nombreCompleto = "El nombre es obligatorio";
+        }
+
+        if (!correoElectronico.trim()) {
+            errores.correoElectronico = "El correo es obligatorio";
+        } else {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(correoElectronico)) {
+                errores.correoElectronico = "El correo no es válido";
+            }
+        }
+
+        if (!usuario.idUsuario && !contrasena.trim()) {
+            errores.contrasena = "La contraseña es obligatoria";
+        }
+
+        if (!idEstudiante) {
+            errores.idEstudiante = "Debes seleccionar un estudiante";
+        }
+
+        setError(errores);
+        return Object.keys(errores).length === 0;
+    };
+
     const guardar = async () => {
         try {
             const usuarioData = {
@@ -110,18 +142,26 @@ function ModalModificarUPadre ({usuario, cerrar, recargar}) {
                 nombreCompleto: nombreCompleto,
                 correoElectronico: correoElectronico,
                 tipoUsuario: "Padre",
-                contrasena: contrasena,
+                //contrasena: contrasena,
                 urlImagen: "",
                 estudiante: idEstudiante ? {
                     idEstudiante
                 } : null
             };
 
+            if (contrasena.trim()) {
+                usuarioData.contrasena = contrasena;
+            }
+
+            if (!validarCampos()) {
+                return; // No guardar si hay errores
+            }
+
             await modificarUsuario(usuarioData);
             cerrar();
             recargar();
         } catch (error) {
-            
+            console.log("Error al guardar modificacion ", error);
         }
     }
 
@@ -137,27 +177,30 @@ function ModalModificarUPadre ({usuario, cerrar, recargar}) {
                         <h3 className="text-gray-600 font-lg font-bold tracking-normal leading-tight mb-4"> Modificar padre</h3>
                     
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                             <div>
                                 <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Nombre completo</label>
-                                <input className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Nombre completo" value={nombreCompleto} onChange={(e) => setNombreCompleto(e.target.value)} />
+                                <input className= {`mb-2 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${ error.nombreCompleto ? "border-red-500" : "border-gray-300" }`} placeholder="Nombre completo" value={nombreCompleto} onChange={(e) => { setNombreCompleto(e.target.value); if (e.target.value.trim() !== "") { setError(prev => ({ ...prev, nombreCompleto: undefined })); }  } } />
+                                <p className="text-red-500 text-xs mb-4">{error.nombreCompleto}</p>
                             </div>
 
                             <div>
                                 <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Correo electronico</label>
-                                <input type="email" className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Correo electronico" value={correoElectronico} onChange={(e) => setCorreoElectronico(e.target.value)} />
+                                <input type="email" className= {`mb-2 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${ error.correoElectronico ? "border-red-500" : "border-gray-300" }`} placeholder="Correo electronico" value={correoElectronico} onChange={(e) => { setCorreoElectronico(e.target.value); const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; if (e.target.value.trim() !== "" && emailRegex.test(e.target.value)) { setError(prev => ({ ...prev, correoElectronico: undefined })); }  } } />
+                                <p className="text-red-500 text-xs mb-4">{error.correoElectronico}</p>
                             </div>
                             
                             <div>
-                                <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Tipo de usuario</label>
+                                <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Tipo de usuario </label>
                                 <input className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Tipo de usuario" value="Padre" disabled readOnly />
                             </div>
 
-                            <div>
+                            <div className="">
                                 <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Contraseña</label>
-                                    <div className="relative">
-                                        <input type={esVisible ? "text": "password"} className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Contraseña" value={contrasena} onChange={(e) => setContrasena(e.target.value)} />
-                            
+                                <div className="relative">
+
+                                    <div className="">
+                                        <input type={esVisible ? "text": "password"} className={`mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${error.contrasena ? "border-red-500" : "border-gray-300"}`} placeholder="Contraseña" value={contrasena} onChange={(e) => { setContrasena(e.target.value); if (e.target.value.trim() !== "" && e.target.value.length >= 8) { setError(prev => ({ ...prev, contrasena: undefined })); }  } } />
+
                                         <button type="button" onClick={toogleVisibilidad} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-sky-500 focus:outline-none">
                                             {esVisible ? (
                                                 <IoMdEyeOff size={20} />
@@ -166,13 +209,19 @@ function ModalModificarUPadre ({usuario, cerrar, recargar}) {
                                             )}
                                         </button>
                                     </div>
+
+                                    <div className="mb-2">
+                                        {error.contrasena && ( <p className="mb-0 absolute left-0 -bottom-6 text-red-500 text-xs"> {error.contrasena} </p> )}
+                                    </div> 
+                           
+                                </div>
                             </div>
 
                             <div>
                                 <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Selecciona un estudiante</label>
 
                                 <div className="relative mb-5 mt-2" ref={selectRef}> 
-                                    <div className="h-10 bg-white flex items-center border border-gray-300 rounded w-full pl-3 pr-2 text-sm text-gray-600 focus-within:border-sky-300">
+                                    <div className= {`mb-2 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${ error.idEstudiante ? "border-red-500" : "border-gray-300" }`} >
                                         <input type="text" value={buscarTermino}
                                             onChange={(e) => {
                                                 setBuscarTermino(e.target.value);
@@ -201,20 +250,33 @@ function ModalModificarUPadre ({usuario, cerrar, recargar}) {
                                             
                                     {estaAbierto && !loadingEstudiantes && (
                                         <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto">
-                                            {filtrarOpciones.map((opcion, index) => {
-                                                const textoOpcion = `${opcion.nombreCompleto} - ${opcion.estudiante.matricula}`;
-                                                return (
-                                                    <div key={opcion.idUsuario || index} onClick={()=> manejarOpcionClick(opcion)} 
-                                                        className={`cursor-pointer px-3 py-2 text-sm text-gray-600 hover:bg-blue-600 hover:text-white ${
-                                                            valorSeleccionado === textoOpcion ? 'bg-gray-100 font-medium' : ''
-                                                        }`}> 
-                                                        {textoOpcion}
-                                                    </div>
-                                                );
-                                            })}   
+                                            {filtrarOpciones.length > 0 ? (
+                                                <div className="py-1">
+                                                    {filtrarOpciones.map((opcion, index)=> {
+                                                        if (!opcion || !opcion.estudiante) return null;
+                            
+                                                        return(
+                                                            <div key={opcion.idUsuario || index} onClick={()=> manejarOpcionClick(opcion)} 
+                                                                className={`cursor-pointer px-3 py-2 text-sm text-gray-600 hover:bg-blue-600 hover:text-white ${
+                                                                    valorSeleccionado === opcion.estudiante.matricula ? 'bg-gray-100 font-medium' : ''
+                                                                }`} > {opcion.nombreCompleto} - {opcion.estudiante.matricula}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            ) : (
+                                                <div className="px-3 py-2 text-sm text-gray-500">
+                                                    {estudiantes.length === 0 ? 
+                                                        "No hay grupos disponibles" : 
+                                                        "No se encontraron resultados"}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
+
+                                {error.idEstudiante && ( <p className="text-red-500 text-xs mb-4">{error.idEstudiante}</p> )}
+
                             </div>
 
                         </div>

@@ -9,7 +9,34 @@ function ModalAgregarUProfesor ({cerrar, recargar}) {
     const [contrasena, setContrasena] = useState("");
 
     const [esVisible, setEsVisible] = useState(false);
+    const [error, setError] = useState("");
     const toogleVisibilidad = () => setEsVisible((prev) => !prev);
+
+    const validarCampos = () => {
+        let errores = {};
+
+        if (!nombreCompleto.trim()) {
+            errores.nombreCompleto = "El nombre es obligatorio";
+        }
+
+        if (!correoElectronico.trim()) {
+            errores.correoElectronico = "El correo es obligatorio";
+        } else {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(correoElectronico)) {
+                errores.correoElectronico = "El correo no es válido";
+            }
+        }
+
+        if (!contrasena.trim()) {
+            errores.contrasena = "La contraseña es obligatoria";
+        } else if (contrasena.length < 8) {
+            errores.contrasena = "Debe tener al menos 8 caracteres";
+        }
+
+        setError(errores);
+        return Object.keys(errores).length === 0;
+    };
 
     const guardar = async () => {
         try {
@@ -20,6 +47,10 @@ function ModalAgregarUProfesor ({cerrar, recargar}) {
                 contrasena: contrasena,
                 urlImagen: "",
             };
+
+            if (!validarCampos()) {
+                return; // No guardar si hay errores
+            }
 
             await crearUsuario(usuarioData);
             cerrar();
@@ -42,15 +73,16 @@ function ModalAgregarUProfesor ({cerrar, recargar}) {
                         <h3 className="text-gray-600 font-lg font-bold tracking-normal leading-tight mb-4"> Agregar profesor</h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                             <div>
                                 <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Nombre completo</label>
-                                <input className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Nombre completo" value={nombreCompleto} onChange={(e) => setNombreCompleto(e.target.value)} />
+                                <input className= {`mb-2 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${ error.nombreCompleto ? "border-red-500" : "border-gray-300" }`} placeholder="Nombre completo" value={nombreCompleto} onChange={(e) => { setNombreCompleto(e.target.value); if (e.target.value.trim() !== "") { setError(prev => ({ ...prev, nombreCompleto: undefined })); }  } } />
+                                <p className="text-red-500 text-xs mb-4">{error.nombreCompleto}</p>
                             </div>
 
                             <div>
                                 <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Correo electronico</label>
-                                <input type="email" className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Correo electronico" value={correoElectronico} onChange={(e) => setCorreoElectronico(e.target.value)} />
+                                <input type="email" className= {`mb-2 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${ error.correoElectronico ? "border-red-500" : "border-gray-300" }`} placeholder="Correo electronico" value={correoElectronico} onChange={(e) => { setCorreoElectronico(e.target.value); const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; if (e.target.value.trim() !== "" && emailRegex.test(e.target.value)) { setError(prev => ({ ...prev, correoElectronico: undefined })); }  } } />
+                                <p className="text-red-500 text-xs mb-4">{error.correoElectronico}</p>
                             </div>
                             
                             <div>
@@ -58,11 +90,13 @@ function ModalAgregarUProfesor ({cerrar, recargar}) {
                                 <input className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Tipo de usuario" value="Profesor" disabled readOnly />
                             </div>
 
-                            <div>
+                            <div className="">
                                 <label className="text-gray-500 text-sm font-bold leading-tight tracking-normal"> Contraseña</label>
-                                    <div className="relative">
-                                        <input type={esVisible ? "text": "password"} className="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Contraseña" value={contrasena} onChange={(e) => setContrasena(e.target.value)} />
-                            
+                                <div className="relative">
+
+                                    <div className="">
+                                        <input type={esVisible ? "text": "password"} className={`mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-sky-300 font-normal w-full h-10 flex items-center pl-3 text-sm rounded border ${error.contrasena ? "border-red-500" : "border-gray-300"}`} placeholder="Contraseña" value={contrasena} onChange={(e) => { setContrasena(e.target.value); if (e.target.value.trim() !== "" && e.target.value.length >= 8) { setError(prev => ({ ...prev, contrasena: undefined })); }  } } />
+
                                         <button type="button" onClick={toogleVisibilidad} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-sky-500 focus:outline-none">
                                             {esVisible ? (
                                                 <IoMdEyeOff size={20} />
@@ -71,6 +105,12 @@ function ModalAgregarUProfesor ({cerrar, recargar}) {
                                             )}
                                         </button>
                                     </div>
+
+                                    <div className="mb-2">
+                                        {error.contrasena && ( <p className="mb-0 absolute left-0 -bottom-6 text-red-500 text-xs"> {error.contrasena} </p> )}
+                                    </div> 
+                           
+                                </div>
                             </div>
 
                         </div>
