@@ -1,11 +1,12 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/gradoGrupo";
+const API_URL = import.meta.env.VITE_API_URL;
+const GRADOS_API_URL = `${API_URL}/gradoGrupo`;
 
 const getToken = () => localStorage.getItem("token");
 
 export const consultarGrados = async () => {
-    const response = await axios.get(`${API_URL}/consultarGradoGrupos`, {
+    const response = await axios.get(`${GRADOS_API_URL}/consultarGradoGrupos`, {
         headers: {Authorization: `Bearer ${getToken()}`},
     });
 
@@ -15,21 +16,21 @@ export const consultarGrados = async () => {
 }
 
 export const crearGrado = async (gradoGrupo) => {
-    const response = await axios.post(`${API_URL}/registrarGradoGrupos`, gradoGrupo, {
+    const response = await axios.post(`${GRADOS_API_URL}/registrarGradoGrupos`, gradoGrupo, {
         headers: {Authorization: `Bearer ${getToken()}`},
     });
     return response.data;
 }
 
 export const modificarGrado = async (gradoGrupo) => {
-    const response = await axios.put(`${API_URL}/modificarGradoGrupos`, gradoGrupo, {
+    const response = await axios.put(`${GRADOS_API_URL}/modificarGradoGrupos`, gradoGrupo, {
         headers: {Authorization: `Bearer ${getToken()}`}
     });
     return response.data;
 }
 
 export const cambiarStatusGrado = async (idGradoGrupo) => {
-    const response = await axios.put(`${API_URL}/cambiarStatusGradosGrupos`, {idGradoGrupo}, {
+    const response = await axios.put(`${GRADOS_API_URL}/cambiarStatusGradosGrupos`, {idGradoGrupo}, {
         headers: {Authorization: `Bearer ${getToken()}`}
     });
     return response.data;

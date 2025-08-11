@@ -1,12 +1,13 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/registroAsistencia";
+const API_URL = import.meta.env.VITE_API_URL;
+const REGISTROS_API_URL = `${API_URL}/registroAsistencia`;
 
 const getToken = () => localStorage.getItem("token");
 
 export const consultarListado = async () => {
     try {
-        const response = await axios.get(`${API_URL}/asistenciaActual`, {
+        const response = await axios.get(`${REGISTROS_API_URL}/asistenciaActual`, {
             headers: {Authorization: `Bearer ${getToken()}`},
         });
 

@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const CLOUDINARY_API_URL = "http://localhost:8080/cloudinary/imagen";
+const API_URL = import.meta.env.VITE_API_URL;
+const CLOUDINARY_API_URL = `${API_URL}/cloudinary/imagen`;
+
 const getToken = () => localStorage.getItem("token");
 
 export const subirImagenCloudinary = async (file) => {

@@ -1,11 +1,12 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/evento";
+const API_URL = import.meta.env.VITE_API_URL;
+const EVENTOS_API_URL = `${API_URL}/evento`;
 
 const getToken = () => localStorage.getItem("token");
 
 export const consultarEventos = async () => {
-    const response = await axios.get(`${API_URL}/obtenerEventos`, {
+    const response = await axios.get(`${EVENTOS_API_URL}/obtenerEventos`, {
         headers: {Authorization: `Bearer ${getToken()}`},
     });
 
@@ -15,14 +16,14 @@ export const consultarEventos = async () => {
 }
 
 export const crearEventos = async (evento) => {
-    const response = await axios.post(`${API_URL}/crearEvento`, evento, {
+    const response = await axios.post(`${EVENTOS_API_URL}/crearEvento`, evento, {
         headers: {Authorization: `Bearer ${getToken()}`},
     });
     return response.data;
 }
 
 export const modificarEventos = async (evento) => {
-    const response = await axios.put(`${API_URL}/modificarEvento`, evento, {
+    const response = await axios.put(`${EVENTOS_API_URL}/modificarEvento`, evento, {
         headers: {Authorization: `Bearer ${getToken()}`},
     });
     return response.data;

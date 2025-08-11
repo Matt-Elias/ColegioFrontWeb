@@ -1,11 +1,12 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/nivel";
+const API_URL = import.meta.env.VITE_API_URL;
+const NIVELES_API_URL = `${API_URL}/nivel`;
 
 const getToken = () => localStorage.getItem("token");
 
 export const consultarNiveles = async () => {
-    const response = await axios.get(`${API_URL}/consultarNiveles`, {
+    const response = await axios.get(`${NIVELES_API_URL}/consultarNiveles`, {
         headers: {Authorization: `Bearer ${getToken()}`},
     });
     
@@ -16,21 +17,21 @@ export const consultarNiveles = async () => {
 }
 
 export const crearNivel = async (nivel) => {
-    const response = await axios.post(`${API_URL}/crearNivel`, nivel, {
+    const response = await axios.post(`${NIVELES_API_URL}/crearNivel`, nivel, {
         headers: {Authorization: `Bearer ${getToken()}`}
     });
     return response.data;
 }
 
 export const modificarNivel = async (nivel) => {
-    const response = await axios.put(`${API_URL}/modificarNivel`, nivel, {
+    const response = await axios.put(`${NIVELES_API_URL}/modificarNivel`, nivel, {
         headers: {Authorization: `Bearer ${getToken()}`}
     });
     return response.data;
 }
 
 export const cambiarStatusNivel = async (idNivel) => {
-    const response = await axios.put(`${API_URL}/cambiarStatus`, {idNivel}, {
+    const response = await axios.put(`${NIVELES_API_URL}/cambiarStatus`, {idNivel}, {
         headers: {Authorization: `Bearer ${getToken()}`}
     });
     //return response.data;

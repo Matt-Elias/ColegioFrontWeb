@@ -1,11 +1,12 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/materia";
+const API_URL = import.meta.env.VITE_API_URL;
+const MATERIAS_API_URL = `${API_URL}/materia`;
 
 const getToken = () => localStorage.getItem("token");
 
 export const consultarMaterias = async () => {
-    const response = await axios.get(`${API_URL}/obtenerMaterias`, {
+    const response = await axios.get(`${MATERIAS_API_URL}/obtenerMaterias`, {
         headers: {Authorization: `Bearer ${getToken()}`},
     });
 
@@ -15,14 +16,14 @@ export const consultarMaterias = async () => {
 }
 
 export const crearMateria = async (materia) => {
-    const response = await axios.post(`${API_URL}/crearMateria`, materia, {
+    const response = await axios.post(`${MATERIAS_API_URL}/crearMateria`, materia, {
         headers: {Authorization: `Bearer ${getToken()}`},
     });
     return response.data;
 }
 
 export const modificarMateria = async (materia) => {
-    const response = await axios.put(`${API_URL}/modificarMateria`, materia, {
+    const response = await axios.put(`${MATERIAS_API_URL}/modificarMateria`, materia, {
         headers: {Authorization: `Bearer ${getToken()}`}
     });
     return response.data;
