@@ -15,13 +15,30 @@ const Listado = () => {
     const cargarDatos = async () => {
         try {
             const registros = await consultarListado();
+
+            console.log("Datos crudos desde API:", registros);
             
+            // Verificar que registros sea un array
             if (!Array.isArray(registros)) {
                 throw new Error(`Formato inesperado: ${JSON.stringify(registros)}`);
             }
 
-             // Obtener IDs únicos de estudiantes
-            const estudiantesIds = [...new Set(registros.map(r => r.estudiante_id))];
+            console.log("Registros procesados:", registros);
+            console.log("Primer registro para debug:", registros[0]);
+
+            // Debug de zona horaria - MEJORADO
+            const fechaOriginal = registros[0]?.fecha_hora;
+            const fechaJS = new Date(fechaOriginal);
+            console.log("=== DEBUG ZONA HORARIA ===");
+            console.log("Fecha original del servidor:", fechaOriginal);
+            console.log("Interpretación JavaScript UTC:", fechaJS.toUTCString());
+            console.log("Hora local del navegador:", fechaJS.toLocaleString());
+            console.log("Hora con +6 horas:", new Date(fechaJS.getTime() + 6*60*60*1000).toLocaleString());
+            console.log("========================");
+
+            // Obtener IDs únicos de estudiantes
+            const estudiantesIds = [...new Set(registros.map(r => r.estudiante_id).filter(id => id))];
+            console.log("IDs de estudiantes únicos:", estudiantesIds);
             
             // Obtener datos de estudiantes
             const estudiantesPromises = estudiantesIds.map(id => 
@@ -33,9 +50,12 @@ const Listado = () => {
             
             estudiantesResults.forEach(result => {
                 if (result.success) {
-                    estudiantesData[result.data.id] = result.data;
+                    // Usamos idEntidadEstudiante como clave porque es el ID del estudiante
+                    estudiantesData[result.data.idEntidadEstudiante] = result.data;
                 }
             });
+
+            console.log("Datos de estudiantes obtenidos:", estudiantesData);
 
             setEstudiantesMap(estudiantesData);
             setListados(registros);
@@ -50,7 +70,7 @@ const Listado = () => {
             }));
 
         } catch (error) {
-            console.error("Error cargando niveles: ", error);
+            console.error("Error cargando datos: ", error);
             setError("Error al cargar los datos. Por favor intente más tarde.");
             setListados([]);
         }
@@ -62,8 +82,15 @@ const Listado = () => {
     
     const formatearFecha = (dateTimeString) => {
         if (!dateTimeString) return '';
+        
+        // Crear fecha y ajustar zona horaria correctamente
         const date = new Date(dateTimeString);
-        return date.toLocaleDateString('es-MX', { 
+        
+        // Si la fecha viene en UTC pero representa hora local de México,
+        // necesitamos interpretar la hora UTC como si fuera hora local
+        const fechaCorregida = new Date(date.getTime() + (6 * 60 * 60 * 1000)); // +6 horas
+        
+        return fechaCorregida.toLocaleDateString('es-MX', { 
             weekday: 'long',
             day: 'numeric',
             month: 'long',
@@ -73,11 +100,18 @@ const Listado = () => {
 
     const formatearHora = (dateTimeString) => {
         if (!dateTimeString) return '';
+        
+        // Crear fecha y ajustar zona horaria correctamente
         const date = new Date(dateTimeString);
-        return date.toLocaleTimeString('es-MX', { 
+        
+        // Si la fecha viene en UTC pero representa hora local de México,
+        // necesitamos interpretar la hora UTC como si fuera hora local
+        const fechaCorregida = new Date(date.getTime() + (6 * 60 * 60 * 1000)); // +6 horas
+        
+        return fechaCorregida.toLocaleTimeString('es-MX', { 
             hour: '2-digit', 
             minute: '2-digit',
-            hour12: false // Para formato 24 horas
+            hour12: false
         });
     };
 
@@ -85,12 +119,6 @@ const Listado = () => {
         return registro === 'Entrada' 
             ? 'text-green-600 ' 
             : 'text-red-600 ';
-    };
-
-    const formatearDataTime = (dateTimeString) => {
-        if (!dateTimeString) return '';
-        const date = new Date(dateTimeString);
-        return date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
     };
 
     const listadoPaginado = useMemo(() => {
@@ -116,9 +144,13 @@ const Listado = () => {
         <div className="flex min-h-screen">
             <Sidebar/>
             <div className="flex-1 ml-12 p-6 transition-all duration-300">
-                <h1 className="px-3 py-2 whitespace-nowrap  mt-2 text-left text-3xl font-bold tracking-tight text-gray-500"> Listado de asistencias </h1>
+                <h1 className="px-3 py-2 whitespace-nowrap mt-2 text-left text-3xl font-bold tracking-tight text-gray-500"> 
+                    Listado de asistencias 
+                </h1>
 
-                <h3 className="py-2 px-3 text-gray-600 font-lg font-bold tracking-normal leading-tight mb-4"> Fecha: {fechaActual} </h3>
+                <h3 className="py-2 px-3 text-gray-600 font-lg font-bold tracking-normal leading-tight mb-4"> 
+                    Fecha: {fechaActual} 
+                </h3>
 
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead>
@@ -133,13 +165,17 @@ const Listado = () => {
                     <tbody className="bg-white divide-y divide-gray-200">
                         {error ? (
                             <tr>
-                                <td className="px-6 py-4 whitespace-nowrap" colSpan="2" style={{color: 'red'}}> {error} </td>
+                                <td className="px-6 py-4 whitespace-nowrap" colSpan="5" style={{color: 'red'}}> 
+                                    {error} 
+                                </td>
                             </tr>
                         ) : listadoPaginado.length > 0 ? (
-                            listadoPaginado.map((listado) => {
-                                const estudiante = estudiantesMap[listado.estudiante_id] || {};
+                            listadoPaginado.map((listado, index) => {
+                                // Obtener datos del estudiante desde el mapa
+                                const estudianteData = estudiantesMap[listado.estudiante_id];
+                                
                                 return (
-                                    <tr key={listado.id_registro_asistencia}>
+                                    <tr key={listado.id_registro_asistencia || index}>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             {formatearFecha(listado.fecha_hora)}
                                         </td>
@@ -150,20 +186,19 @@ const Listado = () => {
                                             {listado.registro}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            {estudiante.nombreCompleto || listado.nombre_completo || 'Desconocido'}
+                                            {estudianteData?.nombreCompleto || 'Sin nombre'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            {estudiante.matricula || listado.matricula}
+                                            {listado.matricula || estudianteData?.matricula || 'Sin matricula'}
                                         </td>
                                     </tr>
                                 );
                             })
                         ) : (
                             <tr>
-                                <td colSpan="2">No hay un listado disponible por ahora</td>
+                                <td colSpan="5">No hay un listado disponible por ahora</td>
                             </tr>
                         )}
-
                     </tbody> 
                 </table>
 
@@ -174,9 +209,7 @@ const Listado = () => {
                     itemsPorPagina={itemsPorPagina}
                     cambiarItemsPorPagina={cambiarItemsPorPagina}
                 />   
-
             </div>
-
         </div>
     );
 }

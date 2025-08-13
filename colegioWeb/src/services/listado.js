@@ -14,29 +14,40 @@ export const consultarListado = async () => {
         console.log("Datos recibidos: ", response.data);
         
         // Obtener el array de resultados
-        const dataArray = Array.isArray(response.data) ? response.data : 
-                         Array.isArray(response.data.result) ? response.data.result : [];
+        const dataArray = Array.isArray(response.data) ? response.data :
+                          Array.isArray(response.data.result) ? response.data.result : [];
+
+        console.log("URL completa:", `${REGISTROS_API_URL}/asistenciaActual`);
+        console.log("Respuesta completa:", response.data);
+        console.log("Cantidad de registros:", dataArray.length);
         
-        // Mapear cada array a un objeto con propiedades nombradas
+        // AQUÍ ESTÁ EL CAMBIO: Ahora mapeamos objetos, no arrays
         const registros = dataArray.map(item => {
+            // item ya es un objeto RegistroAsistencia, no un array
             return {
-                id_registro_asistencia: item[0],
-                fecha_hora: item[1],
-                registro: item[2],
-                usuario_id: item[3],
-                estudiante_id: item[4],
-                id_usuario: item[5],
-                contrasena: item[6],
-                correo_electronico: item[7],
-                fecha_alta: item[8],
-                nombre_completo: item[9],
-                status: item[10],
-                tipo_usuario: item[11],
-                url_imagen: item[12],
-                id_estudiante: item[13],
-                matricula: item[14],
-                tipo: item[15],
-                grado_grupo_id_grado_grupo: item[16]
+                id_registro_asistencia: item.idRegistroAsistencia,
+                fecha_hora: item.fechaHora,
+                registro: item.registro,
+                usuario_id: item.usuario?.idUsuario,
+                estudiante_id: item.estudiante?.idEstudiante,
+                // Datos del usuario
+                id_usuario: item.usuario?.idUsuario,
+                contrasena: item.usuario?.contrasena,
+                correo_electronico: item.usuario?.correoElectronico,
+                fecha_alta: item.usuario?.fechaAlta,
+                nombre_completo: item.usuario?.nombreCompleto,
+                status: item.usuario?.status,
+                tipo_usuario: item.usuario?.tipoUsuario,
+                url_imagen: item.usuario?.urlImagen,
+                // Datos del estudiante
+                id_estudiante: item.estudiante?.idEstudiante,
+                matricula: item.estudiante?.matricula,
+                tipo: item.estudiante?.tipo,
+                // Si el nombre del estudiante está en un campo específico, úsalo aquí
+                nombre_estudiante: item.estudiante?.nombreCompleto || item.estudiante?.nombre || 'Sin nombre',
+                grado_grupo_id_grado_grupo: item.estudiante?.gradoGrupo?.idGradoGrupo,
+                grado_grupo: item.estudiante?.gradoGrupo?.gradoGrupo,
+                nivel_academico: item.estudiante?.gradoGrupo?.nivel?.nivelAcademico
             };
         });
 
